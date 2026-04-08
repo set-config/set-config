@@ -4,6 +4,10 @@
   "description": "YAML adapter for set-config",
   "type": "module",
   "main": "index.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "yaml": "^2.3.4"
   }
