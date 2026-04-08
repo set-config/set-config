@@ -14,10 +14,10 @@ set-config is an agent-first config file CLI designed for AI agents to modify co
 
 ```
 @set-config/
-├── core    # CLI engine + built-in JSON adapter
-├── yaml    # YAML adapter
-├── toml    # TOML adapter
-└── cli     # Full wrapper (depends on core + yaml + toml)
+├── core    # Engine only (adapter loader, no CLI bin)
+├── yaml    # YAML adapter + CLI bin
+├── toml    # TOML adapter + CLI bin
+└── cli     # Full wrapper + CLI bin (depends on core + yaml + toml)
 ```
 
 ## Why Multiple Packages?
@@ -60,4 +60,4 @@ yaml → core
 toml → core
 ```
 
-The `core` package contains the CLI engine and JSON adapter. Adapter packages (`yaml`, `toml`) provide additional format support and register the bin for `npx` access.
+**Note:** `core` is the engine (adapter loader). It does NOT expose a CLI bin. CLI access is provided by `cli`, `yaml`, and `toml` packages. The built-in JSON support is in `core`, while `cli` bundles all adapters.

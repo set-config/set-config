@@ -19,12 +19,12 @@ npm install -g @set-config/cli @set-config/yaml @set-config/toml
 
 ## Packages
 
-| Package | Description | Install |
-|---------|-------------|---------|
-| `@set-config/core` | CLI engine (JSON only) | `npx @set-config/core` |
+| Package | Description | CLI |
+|---------|-------------|-----|
 | `@set-config/cli` | Full CLI + all adapters | `npx @set-config/cli` |
 | `@set-config/yaml` | YAML adapter | `npx @set-config/yaml` |
 | `@set-config/toml` | TOML adapter | `npx @set-config/toml` |
+| `@set-config/core` | Engine only (no CLI) | - |
 
 ## Usage
 
