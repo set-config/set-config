@@ -4,6 +4,10 @@
   "description": "TOML adapter for set-config",
   "type": "module",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/set-config/set-config"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
