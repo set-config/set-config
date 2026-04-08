@@ -2,18 +2,16 @@
 
 YAML adapter for set-config CLI.
 
-## Install
-
-```bash
-npm install -g @set-config/yaml
-```
-
 ## Usage
 
-After installation, `set-config` automatically detects and uses this adapter for `.yaml` and `.yml` files.
-
 ```bash
-set-config set config.yaml server.port 8080
+# Direct use
+npx @set-config/yaml set config.yaml server.port 8080
+npx @set-config/yaml get config.yaml server.port
+
+# With @set-config/cli (auto-detected after adapter install)
+npm install -g @set-config/yaml  # One-time install
+set-config set config.yaml server.port 8080  # Works with any set-config variant
 ```
 
 ## License

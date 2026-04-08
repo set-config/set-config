@@ -1,52 +1,47 @@
-# @set-config/cli
+# @set-config/core
 
-Universal config file CLI - set/get/delete JSON values. Supports YAML and TOML with optional adapters.
+CLI engine for set-config - set/get/delete JSON values.
 
-## Install
+**This is the engine package.** For full functionality, use `@set-config/cli` which includes all adapters.
 
-```bash
-npm install -g @set-config/cli
-```
-
-For YAML support: `npm install -g @set-config/yaml`
-For TOML support: `npm install -g @set-config/toml`
-
-Or install all at once:
+## Quick Start
 
 ```bash
-npm install -g @set-config/cli @set-config/yaml @set-config/toml
+# Set a value
+npx @set-config/cli set config.json database.host localhost
+
+# Get a value
+npx @set-config/cli get config.json database.host
+
+# List keys
+npx @set-config/cli list config.json database
 ```
 
-## Use without installing
+## Adapters
+
+| Format | Package | Install |
+|--------|---------|---------|
+| JSON | built-in | - |
+| YAML | `@set-config/yaml` | `npx @set-config/yaml` |
+| TOML | `@set-config/toml` | `npx @set-config/toml` |
+
+For YAML support:
+```bash
+npx @set-config/yaml set config.yaml server.port 8080
+```
+
+For TOML support:
+```bash
+npx @set-config/toml set config.toml database.pool 10
+```
+
+## Full CLI with all formats
 
 ```bash
-npx @set-config/cli set opencode.json model openai/gpt-4o
-npx @set-config/cli get opencode.json model
+npx @set-config/cli set config.json a.b.c 123
+npx @set-config/cli set config.yaml server.port 8080
+npx @set-config/cli set config.toml database.pool 10
 ```
-
-## Usage
-
-```bash
-set-config set opencode.json provider.minimax.limit.context 200000
-set-config get opencode.json provider.minimax.limit.context
-set-config list opencode.json provider
-set-config append opencode.json plugins "my-plugin"
-set-config remove opencode.json plugins "my-plugin"
-set-config delete opencode.json provider.minimax
-set-config init config.yaml --format yaml
-set-config formats
-```
-
-## Value Types
-
-| Input | Result |
-|-------|--------|
-| `true` | boolean `true` |
-| `false` | boolean `false` |
-| `null` | null |
-| `123` | number `123` |
-| `3.14` | number `3.14` |
-| `hello` | string `"hello"` |
 
 ## License
 
