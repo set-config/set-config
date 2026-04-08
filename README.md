@@ -1,105 +1,51 @@
 # set-config
 
-> Agent-first config file CLI for AI agents and automation
+> Agent-first config file CLI - designed for AI agents to modify config files via shell tools
 
-## Why
+**Why not `node -e` or `jq`?** Agents need simple, memorable commands that are easy to embed in prompts - `jq` syntax is complex for nested paths, Node.js scripts require error handling, Python isn't always available.
 
-Agents (Claude Code, OpenCode, etc.) need to modify config files but:
-- **jq**: Syntax is complex for nested paths, hard to embed in prompts
-- **Node.js scripts**: Require writing files, executing, error handling
-- **Python**: Not always available in all environments
-
-`set-config` is designed for agents to call via `bash` or `execute` tools with simple, memorable commands.
-
-## Quick Start
-
-### Install (optional)
+## No Install Required
 
 ```bash
-# Install globally for repeated use
-npm install -g @set-config/cli @set-config/yaml @set-config/toml
-```
-
-### Use without installing
-
-```bash
-# Use via npx (no install required)
 npx @set-config/cli set opencode.json model openai/gpt-4o
 npx @set-config/cli get opencode.json model
 ```
 
+## Install (for repeated use)
+
+```bash
+npm install -g @set-config/cli @set-config/yaml @set-config/toml
+```
+
 ## Packages
 
-```
-set-config/
-├── packages/
-│   ├── set-config/          # @set-config/cli - Main CLI tool
-│   ├── yaml/                # @set-config/yaml - Optional YAML adapter
-│   └── toml/                # @set-config/toml - Optional TOML adapter
-```
+| Package | Description | Install |
+|---------|-------------|---------|
+| `@set-config/core` | CLI engine (JSON only) | `npx @set-config/core` |
+| `@set-config/cli` | Full CLI + all adapters | `npx @set-config/cli` |
+| `@set-config/yaml` | YAML adapter | `npx @set-config/yaml` |
+| `@set-config/toml` | TOML adapter | `npx @set-config/toml` |
 
-### @set-config/cli
-
-Main CLI tool with built-in JSON support.
+## Usage
 
 ```bash
-npm install -g @set-config/cli
-```
+# Set, get, delete values
+npx @set-config/cli set config.json a.b.c 123
+npx @set-config/cli get config.json a.b.c
+npx @set-config/cli delete config.json a.b.c
 
-### @set-config/yaml
+# List, append, remove
+npx @set-config/cli list config.json a
+npx @set-config/cli append config.json tags "new-tag"
+npx @set-config/cli remove config.json tags "old-tag"
 
-Optional YAML adapter. Install alongside CLI for YAML support.
-
-```bash
-npm install -g @set-config/yaml
-```
-
-### @set-config/toml
-
-Optional TOML adapter. Install alongside CLI for TOML support.
-
-```bash
-npm install -g @set-config/toml
-```
-
-## CLI Usage
-
-```bash
-# Set a value
-set-config set opencode.json provider.minimax.limit.context 200000
-
-# Get a value
-set-config get opencode.json provider.minimax.limit.context
-
-# List content at path
-set-config list opencode.json provider
-
-# Append to array
-set-config append opencode.json plugins "my-plugin"
-
-# Remove from array
-set-config remove opencode.json plugins "my-plugin"
-
-# Delete a field
-set-config delete opencode.json provider.minimax
-
-# Initialize new file
-set-config init config.yaml --format yaml
-
-# Check supported formats
-set-config formats
+# Initialize new files
+npx @set-config/cli init config.yaml --format yaml
 ```
 
 ## For Agents
 
-Agents can call this tool directly via bash/execute without writing scripts:
-
-```
-Tool: bash
-Command: set-config set opencode.json model openai/gpt-4o
-```
-
-Or via npx without installation:
+Designed for agents using bash/execute tools - simple commands that work without writing scripts:
 
 ```
 Tool: bash
@@ -110,20 +56,12 @@ Command: npx @set-config/cli set opencode.json model openai/gpt-4o
 
 | Input | Result |
 |-------|--------|
+| `123` | number `123` |
+| `3.14` | number `3.14` |
 | `true` | boolean `true` |
 | `false` | boolean `false` |
 | `null` | null |
-| `123` | number `123` |
-| `3.14` | number `3.14` |
 | `hello` | string `"hello"` |
-
-## Extending
-
-To add support for a new format, create a new adapter package:
-
-1. Create `@set-config/your-format` package
-2. Implement `supports(filename)` and `read/write` methods
-3. Export a class that the CLI can dynamically load
 
 ## License
 
