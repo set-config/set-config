@@ -5,11 +5,11 @@
 ## Why set-config?
 
 Agents (Claude Code, OpenCode, etc.) need to modify config files but:
-- **`jq`**: Syntax is complex for nested paths, hard to embed in prompts
+- **`jq`**: Great for reading, painful for writing - requires complex pipelines
 - **`node -e`**: Requires writing scripts, error handling, file management
 - **`Python`**: Not always available
 
-`set-config` provides simple, memorable commands that work via `bash` or `execute` tools.
+`set-config` provides simple commands that work via `bash` or `execute` tools.
 
 ## Quick Start
 
