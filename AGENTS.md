@@ -1,123 +1,107 @@
-# AGENTS.md
+# AGENTS.md - Maintainer Intent Index
 
-> Intent index for AI agents - how to use set-config in agent workflows
+> This file is a guide for maintainers - what the project is, where things are, and how to work with it.
 
-## Why set-config?
+## Project Overview
 
-Agents (Claude Code, OpenCode, etc.) need to modify config files but:
-- **`jq`**: Syntax is complex for nested paths, hard to embed in prompts
-- **`node -e`**: Requires writing scripts, error handling, file management
-- **`Python`**: Not always available in all environments
+Universal config file CLI for AI agents. Simple commands to set/get/delete JSON, YAML, TOML values.
 
-`set-config` provides simple, memorable commands that work via `bash` or `execute` tools.
+**Key insight**: Agents need zero-install usage (`npx`) and simple commands. Complex tooling is a barrier.
 
-## Core Commands
+## Tech Stack
+
+- **Runtime**: Node.js 20+
+- **Language**: TypeScript
+- **Bundler**: rolldown-vite
+- **Package Manager**: pnpm
+- **Testing**: vitest
+
+## Project Structure
+
+```
+set-config/
+├── packages/
+│   ├── core/          # Engine + adapter loader + JSON adapter
+│   ├── yaml/         # YAML adapter
+│   ├── toml/         # TOML adapter
+│   └── cli/          # Full wrapper (bundles all adapters)
+├── integration/       # Integration tests (vitest)
+├── ARCHITECTURE.md   # Technical architecture details
+├── AGENTS.md         # This file
+└── README.md         # User-facing quick start
+```
+
+## Design Rules
+
+### 1. Zero-Install First
+Every package that provides format support MUST expose a CLI bin so `npx @set-config/<package>` works without installation.
+
+### 2. Publish from dist/
+Source directories have `prepublishOnly: exit 1` to prevent accidental publishes. Build scripts generate `dist/` with resolved dependency versions. Publish from `dist/`.
+
+### 3. Adapter Pattern
+Format support is provided via adapter packages. The core engine dynamically loads adapters at runtime via `import()`.
+
+### 4. Semantic Versions
+All packages share the same version number to avoid confusion.
+
+## Publishing Workflow
 
 ```bash
-# Set a value (creates path if needed)
-npx @set-config/cli set config.json database.host localhost
+# 1. Update versions in all packages
+# packages/*/package.json: version: x.y.z
 
-# Get a value
-npx @set-config/cli get config.json database.host
+# 2. Build all packages
+pnpm build
 
-# Delete a key
-npx @set-config/cli delete config.json database.host
+# 3. Publish from dist/
+cd packages/core && npm run publish
+cd packages/yaml && npm run publish
+cd packages/toml && npm run publish
+cd packages/cli && npm run publish
 
-# List keys at path
-npx @set-config/cli list config.json database
-
-# Array operations
-npx @set-config/cli append config.json plugins "my-plugin"
-npx @set-config/cli remove config.json plugins "unused-plugin"
+# 4. Run integration tests
+CI=true pnpm test:integration
 ```
 
-## Usage Patterns
+## Integration Tests
 
-### Pattern 1: Direct npx (no install)
+Located in `integration/publish.test.ts`. Tests verify that published npm packages work correctly via npx.
 
+**Skip by default** - requires `CI=true` and network access:
 ```bash
-Tool: bash
-Command: npx @set-config/cli set opencode.json model openai/gpt-4o
+CI=true pnpm test:integration
 ```
 
-### Pattern 2: Global install for repeated use
+## Architecture Decisions
 
-```bash
-npm install -g @set-config/cli
-# cli includes yaml and toml adapters, so no extra install needed
-# Then use: set-config set config.json ...
-```
+### Why Multiple Packages?
+- `npx @set-config/yaml` must work without global install
+- Each adapter package bundles the `set-config` bin
+- `cli` is a convenience wrapper that depends on all adapters
 
-### Pattern 3: Minimal/speed-critical scenarios
+### Why rolldown-vite?
+- Fast bundling
+- ESM-first output
+- Works well with TypeScript
 
-```bash
-# JSON only - smallest download, fastest startup
-npx @set-config/core set config.json a 123
+### Why Dynamic Import for Adapters?
+Allows optional dependencies. If yaml adapter isn't installed, core still works for JSON. Error messages guide users to install the needed adapter.
 
-# YAML only
-npx @set-config/yaml set config.yaml server.port 8080
+## CLI Commands
 
-# TOML only
-npx @set-config/toml set config.toml database.pool 10
-```
+See `packages/core/src/commands/` for implementation:
+- `set` - Set a value (creates path if needed)
+- `get` - Get a value
+- `delete` - Delete a key
+- `list` - List keys at path
+- `append` - Append to array
+- `remove` - Remove from array
+- `init` - Initialize new file
+- `formats` - Show supported formats
 
-**When to use which:**
-- `cli` (recommended) - Most scenarios, includes all formats
-- `core` - JSON only, minimal/fastest
-- `yaml` / `toml` - Specific format, minimal
+## For More Details
 
-## Value Types
-
-| Input | Result |
-|-------|--------|
-| `123` | number `123` |
-| `3.14` | number `3.14` |
-| `true` | boolean `true` |
-| `false` | boolean `false` |
-| `null` | null |
-| `hello` | string `"hello"` |
-
-## Architecture
-
-- `cli` - Full wrapper with JSON + YAML + TOML support
-- `yaml` - YAML adapter (for `npx @set-config/yaml`)
-- `toml` - TOML adapter (for `npx @set-config/toml`)
-- `core` - Engine only (not directly used by agents)
-
-## Why Multiple Packages?
-
-Each adapter package (`yaml`, `toml`) registers the `set-config` bin. This allows `npx @set-config/yaml` to work without any installation - the bin is bundled in the package itself.
-
-When you run `npx @set-config/cli`, it automatically downloads YAML/TOML adapters if needed.
-
-## Error Handling
-
-```bash
-# File doesn't exist - auto-creates
-npx @set-config/cli set newfile.json a.b.c 123  # ✓ Creates newfile.json
-
-# Path doesn't exist - auto-creates
-npx @set-config/cli set config.json new.path.value 123  # ✓ Creates path
-
-# Invalid format - clear error
-npx @set-config/yaml set file.yaml ...  # Only works with yaml
-```
-
-## For Tool Definitions
-
-```json
-{
-  "name": "set-config",
-  "description": "Set a config value in JSON/YAML/TOML file",
-  "input_schema": {
-    "type": "object",
-    "properties": {
-      "file": { "type": "string", "description": "Config file path" },
-      "path": { "type": "string", "description": "Dot-separated path" },
-      "value": { "type": "string", "description": "Value to set" }
-    }
-  }
-}
-```
-
-Usage: `set-config set opencode.json model openai/gpt-4o`
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical deep dive
+- [README.md](README.md) - User quick start
+- Source code in `packages/*/src/`
