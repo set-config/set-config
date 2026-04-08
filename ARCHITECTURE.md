@@ -65,3 +65,38 @@ toml → core
 ```
 
 **Note:** `core` is the engine (adapter loader + JSON support) and exposes a CLI bin for minimal JSON-only usage. `cli` bundles all adapters for full functionality.
+
+## Path Tokenizer Design
+
+### Problem
+
+Config keys may contain dots (e.g., model names like `MiniMax-M2.7-highspeed`). Using `split('.')` cannot distinguish between:
+- `a.b.c` → keys `["a", "b", "c"]`
+- `a."b.c".d` → keys `["a", "b.c", "d"]`
+
+### Solution: State Machine Tokenizer
+
+The `tokenizeKeyPath()` function uses a simple state machine to parse paths:
+
+```
+State transitions:
+  DEFAULT  → (quote)    → QUOTED
+  QUOTED   → (quote)    → DEFAULT
+  QUOTED   → (backslash) → ESCAPED
+  ESCAPED  → (any)      → QUOTED
+
+Characters inside quotes (including dots) are preserved as-is.
+```
+
+### Examples
+
+| Path | Tokens |
+|------|--------|
+| `a.b.c` | `["a", "b", "c"]` |
+| `a."b.c".d` | `["a", "b.c", "d"]` |
+| `a.'b.c'.d` | `["a", "b.c", "d"]` |
+| `provider.models."MiniMax-M2.7-highspeed".limit` | `["provider", "models", "MiniMax-M2.7-highspeed", "limit"]` |
+
+### Implementation
+
+All path manipulation functions (`getNested`, `setNested`, `deleteNested`, `appendNested`, `removeNested`) use `tokenizeKeyPath()` instead of `split('.')`.
