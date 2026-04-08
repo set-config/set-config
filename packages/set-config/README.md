@@ -1,4 +1,4 @@
-# @set-config/cli
+# set-config
 
 Universal config file CLI - set/get/delete JSON, YAML, TOML values
 
@@ -6,22 +6,42 @@ Universal config file CLI - set/get/delete JSON, YAML, TOML values
 
 ```bash
 npm install -g @set-config/cli
+```
 
-# Optional: add more formats
-npm install -g @set-config/yaml
-npm install -g @set-config/toml
+## Optional Adapters
+
+By default, only JSON is supported. Install optional adapters for more formats:
+
+```bash
+npm install -g @set-config/yaml   # for .yaml, .yml files
+npm install -g @set-config/toml    # for .toml files
 ```
 
 ## Usage
 
 ```bash
+# Set a value
 set-config set opencode.json provider.minimax.limit.context 200000
+
+# Get a value
 set-config get opencode.json provider.minimax.limit.context
+
+# List content at path
 set-config list opencode.json provider
+
+# Append to array
 set-config append opencode.json plugins "my-plugin"
+
+# Remove from array
 set-config remove opencode.json plugins "my-plugin"
+
+# Delete a field
 set-config delete opencode.json provider.minimax
+
+# Initialize new file
 set-config init config.yaml --format yaml
+
+# Check supported formats
 set-config formats
 ```
 

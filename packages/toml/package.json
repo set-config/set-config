@@ -1,6 +1,6 @@
 {
   "name": "@set-config/toml",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "TOML adapter for set-config CLI",
   "type": "module",
   "main": "index.js",
