@@ -1,6 +1,15 @@
 # set-config
 
-Universal config file CLI - set/get/delete JSON, YAML, TOML values
+Agent-first config file CLI for AI agents and automation.
+
+## Why
+
+Agents (Claude Code, OpenCode, etc.) need to modify config files but:
+- **jq**: Syntax is complex for nested paths, hard to embed in prompts
+- **Node.js scripts**: Require writing files, executing, error handling
+- **Python**: Not always available in all environments
+
+`set-config` is designed for agents to call via `bash` or `execute` tools with simple, memorable commands.
 
 ## Install
 
@@ -9,8 +18,6 @@ npm install -g @set-config/cli
 ```
 
 ## Optional Adapters
-
-By default, only JSON is supported. Install optional adapters for more formats:
 
 ```bash
 npm install -g @set-config/yaml   # for .yaml, .yml files
@@ -43,6 +50,15 @@ set-config init config.yaml --format yaml
 
 # Check supported formats
 set-config formats
+```
+
+## For Agents
+
+Agents can call this tool directly via bash/execute without writing scripts:
+
+```
+Tool: bash
+Command: set-config set opencode.json model openai/gpt-4o
 ```
 
 ## Value Types
