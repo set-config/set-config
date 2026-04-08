@@ -1,7 +1,7 @@
 {
   "name": "@set-config/cli",
   "version": "0.0.4",
-  "description": "Universal config file CLI - set/get/delete JSON, YAML, TOML values",
+  "description": "Agent-first config file CLI - set/get/delete JSON, YAML, TOML values",
   "type": "module",
   "main": "src/index.js",
   "bin": {
@@ -14,9 +14,5 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  },
-  "dependencies": {
-    "@set-config/yaml": "workspace:*",
-    "@set-config/toml": "workspace:*"
   }
 }
