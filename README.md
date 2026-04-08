@@ -39,6 +39,16 @@ npx @set-config/cli append config.json array.path "item"
 npx @set-config/cli remove config.json array.path "item"
 ```
 
+## Keys with Dots
+
+Keys containing dots (e.g., model names like `MiniMax-M2.7-highspeed`) must be quoted:
+
+```bash
+npx @set-config/cli set config.json 'provider.minimax.models."MiniMax-M2.7-highspeed".limit.context' 200000
+```
+
+Single or double quotes work: `"key.with.dots"` or `'key.with.dots'`
+
 ## Value Types
 
 | Input | Result |

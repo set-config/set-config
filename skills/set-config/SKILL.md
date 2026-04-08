@@ -21,6 +21,11 @@ set-config remove file.json arr "item"
 
 Value types: `123` (number), `true/false` (boolean), `null`, `"string"`
 
+Keys with dots (e.g. model names like `MiniMax-M2.7-highspeed`) must be quoted:
+```bash
+set-config set opencode.json 'provider.minimax.models."MiniMax-M2.7-highspeed".limit.context' 200000
+```
+
 ```bash
 set-config set opencode.json model openai/gpt-4o
 set-config get config.json database.host
