@@ -1,7 +1,7 @@
 {
-  "name": "@set-config/core",
-  "version": "1.0.0",
-  "description": "Core of set-config - Universal config file CLI",
+  "name": "set-config",
+  "version": "0.0.1",
+  "description": "Universal config file CLI - set/get/delete JSON, YAML, TOML values",
   "type": "module",
   "main": "src/index.js",
   "bin": {
