@@ -7,7 +7,7 @@ const scriptDir = resolve(dirname(fileURLToPath(import.meta.url)));
 const root = resolve(scriptDir, '..');
 const pkg = JSON.parse(fs.readFileSync(resolve(root, 'package.json'), 'utf8'));
 
-// Build with vite
+// Build with vite for Node.js
 await build({
   root,
   build: {
@@ -19,7 +19,7 @@ await build({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      external: [],
+      external: ['@set-config/core', '@set-config/yaml', '@set-config/toml'],
       output: {
         entryFileNames: 'index.js',
       },
@@ -38,13 +38,17 @@ function getVersion(name: string): string {
 }
 
 // Generate dist/package.json with resolved versions
+// Adjust bin path for dist (remove leading ./dist/ since we publish from dist)
+const distBinPath = pkg.bin['set-config'].replace('./dist', '.');
 const distPkg = {
   name: pkg.name,
   version: pkg.version,
   description: pkg.description,
   type: pkg.type,
   main: 'index.js',
-  bin: pkg.bin,
+  bin: {
+    'set-config': distBinPath,
+  },
   repository: pkg.repository,
   publishConfig: pkg.publishConfig,
   dependencies: {

@@ -1,14 +1,16 @@
 {
   "name": "@set-config/cli",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Full-featured set-config CLI wrapper",
   "type": "module",
   "bin": {
-    "set-config": "./dist/cli.js"
+    "set-config": "./dist/bin/set-config"
   },
+  "files": ["dist"],
   "scripts": {
     "build": "node scripts/build.ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "exit 1",
+    "publish": "cd dist && npm publish"
   },
   "devDependencies": {
     "typescript": "^6.0.2",

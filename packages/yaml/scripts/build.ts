@@ -38,12 +38,16 @@ function getVersion(name: string): string {
 }
 
 // Generate dist/package.json with resolved versions
+// Adjust bin path for dist (bin is at dist/bin/set-config)
 const distPkg = {
   name: pkg.name,
   version: pkg.version,
   description: pkg.description,
   type: pkg.type,
   main: 'index.js',
+  bin: {
+    'set-config': './bin/set-config',
+  },
   repository: pkg.repository,
   publishConfig: pkg.publishConfig,
   dependencies: {
@@ -54,8 +58,9 @@ const distPkg = {
 
 fs.writeFileSync(resolve(root, 'dist/package.json'), JSON.stringify(distPkg, null, 2) + '\n');
 
-// Write cli.js that imports @set-config/core
-fs.writeFileSync(resolve(root, 'dist/cli.js'), `#!/usr/bin/env node
+// Write bin/set-config
+fs.mkdirSync(resolve(root, 'dist/bin'), { recursive: true });
+fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
 import '@set-config/core';
 `);
 
