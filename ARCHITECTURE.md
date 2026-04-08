@@ -42,6 +42,8 @@ set-config set config.yaml a.b.c 123
 | npx (recommended) | `npx @set-config/cli set config.json a 123` | No install, always latest |
 | Global install | `npm install -g @set-config/cli` | Repeated use, offline |
 
+**Note:** `cli` includes yaml and toml adapters, so `npm install -g @set-config/cli` is sufficient for all formats.
+
 ## Publishing
 
 - Source directory: `prepublishOnly: exit 1` (prevents accidental publish)

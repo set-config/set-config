@@ -32,7 +32,8 @@ npx @set-config/cli remove config.json array.path "item"
 ## Install (optional)
 
 ```bash
-npm install -g @set-config/cli @set-config/yaml @set-config/toml
+npm install -g @set-config/cli
+# cli includes yaml and toml adapters - no extra install needed
 ```
 
 ## For Agents

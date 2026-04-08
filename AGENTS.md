@@ -43,11 +43,12 @@ Command: npx @set-config/cli set opencode.json model openai/gpt-4o
 ### Pattern 2: Global install for repeated use
 
 ```bash
-npm install -g @set-config/cli @set-config/yaml @set-config/toml
+npm install -g @set-config/cli
+# cli includes yaml and toml adapters, so no extra install needed
 # Then use: set-config set config.json ...
 ```
 
-### Pattern 3: Format-specific packages
+### Pattern 3: Format-specific packages (for minimal installs)
 
 ```bash
 # YAML only
