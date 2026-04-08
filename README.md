@@ -12,11 +12,11 @@ npx @set-config/cli get config.json a.b.c
 
 ## Packages
 
-| Package | Description | CLI |
-|---------|-------------|-----|
-| `@set-config/cli` | Full CLI + all adapters | `npx @set-config/cli` |
-| `@set-config/yaml` | YAML adapter | `npx @set-config/yaml` |
-| `@set-config/toml` | TOML adapter | `npx @set-config/toml` |
+| Package | Description | Use Case |
+|---------|-------------|----------|
+| `@set-config/cli` | Full CLI + all adapters | Most scenarios (recommended) |
+| `@set-config/yaml` | YAML adapter only | Minimal/speed-critical |
+| `@set-config/toml` | TOML adapter only | Minimal/speed-critical |
 
 ## Usage
 

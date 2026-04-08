@@ -48,15 +48,22 @@ npm install -g @set-config/cli
 # Then use: set-config set config.json ...
 ```
 
-### Pattern 3: Format-specific packages (for minimal installs)
+### Pattern 3: Minimal/speed-critical scenarios
 
 ```bash
-# YAML only
+# Only JSON needed - smallest download
+npx @set-config/core set config.json a 123
+
+# YAML only - faster startup for single format
 npx @set-config/yaml set config.yaml server.port 8080
 
 # TOML only
 npx @set-config/toml set config.toml database.pool 10
 ```
+
+**When to use which:**
+- `cli` (recommended) - Most scenarios, includes all formats
+- `yaml` / `toml` - Speed-critical, only download what you need
 
 ## Value Types
 
