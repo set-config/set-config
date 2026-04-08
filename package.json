@@ -5,14 +5,17 @@
   "packages": [
     "packages/*"
   ],
+  "scripts": {
+    "build": "pnpm -r --filter=@set-config/core build && pnpm -r --filter=@set-config/yaml build && pnpm -r --filter=@set-config/toml build && pnpm -r --filter=@set-config/cli build"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2",
+    "vite": "npm:rolldown-vite@latest",
+    "vitest": "^4.1.1"
+  },
   "pnpm": {
     "overrides": {
-      "@set-config/yaml": "link:../../.local/share/pnpm/global/5/node_modules/@set-config/yaml",
-      "@set-config/toml": "link:../../.local/share/pnpm/global/5/node_modules/@set-config/toml"
+      "vite": "npm:rolldown-vite@latest"
     }
-  },
-  "dependencies": {
-    "@set-config/toml": "link:../../.local/share/pnpm/global/5/node_modules/@set-config/toml",
-    "@set-config/yaml": "link:../../.local/share/pnpm/global/5/node_modules/@set-config/yaml"
   }
 }

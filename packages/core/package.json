@@ -1,11 +1,11 @@
 {
-  "name": "@set-config/toml",
+  "name": "@set-config/core",
   "version": "0.0.5",
-  "description": "TOML adapter for set-config",
+  "description": "CLI engine for set-config",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "set-config": "./dist/cli.js"
+    "set-config": "./bin/set-config"
   },
   "scripts": {
     "build": "node scripts/build.ts",
@@ -14,10 +14,6 @@
   "devDependencies": {
     "typescript": "^6.0.2",
     "vite": "npm:rolldown-vite@latest"
-  },
-  "dependencies": {
-    "@set-config/core": "workspace:*",
-    "@iarna/toml": "^2.2.5"
   },
   "repository": {
     "type": "git",

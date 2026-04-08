@@ -1,7 +1,7 @@
 import { getAdapter } from '../adapters/index.js';
 import { deleteNested, resolvePath } from '../utils.js';
 
-export async function del(filepath, keyPath) {
+export async function del(filepath: string, keyPath: string): Promise<void> {
   const resolvedPath = resolvePath(filepath);
   const adapter = await getAdapter(resolvedPath);
   const data = adapter.read(resolvedPath) || {};

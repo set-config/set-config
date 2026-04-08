@@ -1,32 +1,31 @@
 import { ConfigAdapter } from './base.js';
 import { JsonAdapter } from './json.js';
 
-const builtInAdapters = [new JsonAdapter()];
+const builtInAdapters: ConfigAdapter[] = [new JsonAdapter()];
 
 class AdapterLoader {
-  constructor() {
-    this._externalAdapters = null;
-    this._loading = null;
-  }
+  private _externalAdapters: ConfigAdapter[] | null = null;
+  private _loading: Promise<ConfigAdapter[]> | null = null;
 
-  async load() {
+  async load(): Promise<ConfigAdapter[]> {
     if (this._externalAdapters !== null) return this._externalAdapters;
     if (this._loading) return this._loading;
     this._loading = this._doLoad();
     return this._loading;
   }
 
-  async _doLoad() {
-    const external = [];
+  private async _doLoad(): Promise<ConfigAdapter[]> {
+    const external: ConfigAdapter[] = [];
+    
     try {
       const mod = await import('@set-config/yaml');
-      const YamlAdapter = mod.YamlAdapter || mod.default;
+      const YamlAdapter = (mod as any).YamlAdapter || mod.default;
       if (YamlAdapter) external.push(new YamlAdapter());
     } catch {}
 
     try {
       const mod = await import('@set-config/toml');
-      const TomlAdapter = mod.TomlAdapter || mod.default;
+      const TomlAdapter = (mod as any).TomlAdapter || mod.default;
       if (TomlAdapter) external.push(new TomlAdapter());
     } catch {}
 
@@ -34,40 +33,40 @@ class AdapterLoader {
     return external;
   }
 
-  getBuiltIn() {
+  getBuiltIn(): ConfigAdapter[] {
     return builtInAdapters;
   }
 
-  async getAll() {
+  async getAll(): Promise<ConfigAdapter[]> {
     const external = await this.load();
     return [...builtInAdapters, ...external];
   }
 
-  async getFor(filename) {
+  async getFor(filename: string): Promise<ConfigAdapter> {
     const all = await this.getAll();
     return all.find(a => a.supports(filename)) || builtInAdapters[0];
   }
 
-  getBuiltInFor(filename) {
+  getBuiltInFor(filename: string): ConfigAdapter {
     return builtInAdapters.find(a => a.supports(filename)) || builtInAdapters[0];
   }
 }
 
 const loader = new AdapterLoader();
 
-export async function getAllAdapters() {
+export async function getAllAdapters(): Promise<ConfigAdapter[]> {
   return loader.getAll();
 }
 
-export async function getAdapter(filename) {
+export async function getAdapter(filename: string): Promise<ConfigAdapter> {
   return loader.getFor(filename);
 }
 
-export function getBuiltInAdapter(filename) {
+export function getBuiltInAdapter(filename: string): ConfigAdapter {
   return loader.getBuiltInFor(filename);
 }
 
-export async function getSupportedFormats() {
+export async function getSupportedFormats(): Promise<string[]> {
   const formats = ['JSON (.json, .jsonc) - built-in'];
   const external = await loader.load();
   const hasYaml = external.some(a => a.constructor.name === 'YamlAdapter');

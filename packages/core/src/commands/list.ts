@@ -1,7 +1,7 @@
 import { getAdapter } from '../adapters/index.js';
 import { getNested, resolvePath } from '../utils.js';
 
-export async function list(filepath, keyPath) {
+export async function list(filepath: string, keyPath?: string): Promise<void> {
   const resolvedPath = resolvePath(filepath);
   const adapter = await getAdapter(resolvedPath);
   const data = adapter.read(resolvedPath);

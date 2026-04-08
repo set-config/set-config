@@ -1,7 +1,7 @@
 import { getAdapter } from '../adapters/index.js';
 import { removeNested, parseValue, resolvePath } from '../utils.js';
 
-export async function remove(filepath, keyPath, value) {
+export async function remove(filepath: string, keyPath: string, value: string): Promise<void> {
   const resolvedPath = resolvePath(filepath);
   const adapter = await getAdapter(resolvedPath);
   const data = adapter.read(resolvedPath) || {};

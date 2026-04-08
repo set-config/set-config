@@ -11,11 +11,11 @@ import { remove } from './commands/remove.js';
 import { init } from './commands/init.js';
 import fs from 'fs';
 
-const commands = { set, get, delete: del, del, list, append, remove, init };
+const commands: Record<string, Function> = { set, get, delete: del, del, list, append, remove, init };
 
 async function showHelp() {
   const formats = await getSupportedFormats();
-  console.log(`set-config - Universal config file CLI
+  console.log(`set-config - Agent-first config file CLI
 
 Usage:
   set-config <command> [options]
@@ -69,7 +69,7 @@ async function main() {
   }
 
   if (commandName === 'init') {
-    await init(cmdArgs[0], values.format);
+    await init(cmdArgs[0], values.format as string | undefined);
     return;
   }
 
@@ -82,8 +82,8 @@ async function main() {
 
   try {
     await command(...cmdArgs);
-  } catch (err) {
-    console.error(`✗ Error: ${err.message}`);
+  } catch (err: unknown) {
+    console.error(`✗ Error: ${(err as Error).message}`);
     process.exit(1);
   }
 }

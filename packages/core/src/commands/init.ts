@@ -3,7 +3,7 @@ import path from 'path';
 import { resolvePath } from '../utils.js';
 import { getAdapter, getSupportedFormats } from '../adapters/index.js';
 
-export async function init(filepath, format) {
+export async function init(filepath: string, format?: string): Promise<void> {
   const resolvedPath = resolvePath(filepath);
 
   if (fs.existsSync(resolvedPath)) {

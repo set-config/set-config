@@ -1,9 +1,8 @@
 {
-  "name": "@set-config/toml",
+  "name": "@set-config/cli",
   "version": "0.0.5",
-  "description": "TOML adapter for set-config",
+  "description": "Full-featured set-config CLI wrapper",
   "type": "module",
-  "main": "dist/index.js",
   "bin": {
     "set-config": "./dist/cli.js"
   },
@@ -17,7 +16,8 @@
   },
   "dependencies": {
     "@set-config/core": "workspace:*",
-    "@iarna/toml": "^2.2.5"
+    "@set-config/yaml": "workspace:*",
+    "@set-config/toml": "workspace:*"
   },
   "repository": {
     "type": "git",
