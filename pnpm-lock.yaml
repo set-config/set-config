@@ -1,0 +1,57 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+overrides:
+  '@set-config/yaml': link:../../.local/share/pnpm/global/5/node_modules/@set-config/yaml
+  '@set-config/toml': link:../../.local/share/pnpm/global/5/node_modules/@set-config/toml
+
+importers:
+
+  .:
+    dependencies:
+      '@set-config/toml':
+        specifier: link:../../.local/share/pnpm/global/5/node_modules/@set-config/toml
+        version: link:../../.local/share/pnpm/global/5/node_modules/@set-config/toml
+      '@set-config/yaml':
+        specifier: link:../../.local/share/pnpm/global/5/node_modules/@set-config/yaml
+        version: link:../../.local/share/pnpm/global/5/node_modules/@set-config/yaml
+
+  packages/set-config:
+    dependencies:
+      '@set-config/toml':
+        specifier: link:../../../../.local/share/pnpm/global/5/node_modules/@set-config/toml
+        version: link:../../../../.local/share/pnpm/global/5/node_modules/@set-config/toml
+      '@set-config/yaml':
+        specifier: link:../../../../.local/share/pnpm/global/5/node_modules/@set-config/yaml
+        version: link:../../../../.local/share/pnpm/global/5/node_modules/@set-config/yaml
+
+  packages/toml:
+    dependencies:
+      '@iarna/toml':
+        specifier: ^2.2.5
+        version: 2.2.5
+
+  packages/yaml:
+    dependencies:
+      yaml:
+        specifier: ^2.3.4
+        version: 2.8.3
+
+packages:
+
+  '@iarna/toml@2.2.5':
+    resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
+
+  yaml@2.8.3:
+    resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
+snapshots:
+
+  '@iarna/toml@2.2.5': {}
+
+  yaml@2.8.3: {}

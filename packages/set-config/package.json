@@ -1,0 +1,14 @@
+{
+  "name": "@set-config/core",
+  "version": "1.0.0",
+  "description": "Core of set-config - Universal config file CLI",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "set-config": "./bin/set-config"
+  },
+  "dependencies": {
+    "@set-config/yaml": "workspace:*",
+    "@set-config/toml": "workspace:*"
+  }
+}
