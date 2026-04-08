@@ -1,7 +1,7 @@
 {
   "name": "@set-config/yaml",
   "version": "0.0.1",
-  "description": "YAML adapter for set-config",
+  "description": "YAML adapter for set-config CLI",
   "type": "module",
   "main": "index.js",
   "repository": {

@@ -1,5 +1,5 @@
 {
-  "name": "set-config",
+  "name": "@set-config/cli",
   "version": "0.0.1",
   "description": "Universal config file CLI - set/get/delete JSON, YAML, TOML values",
   "type": "module",

@@ -6,7 +6,7 @@ Universal config file CLI - set/get/delete JSON, YAML, TOML values
 
 ```bash
 # Core (JSON only)
-npm install -g set-config
+npm install -g @set-config/cli
 
 # Optional: add YAML support
 npm install -g @set-config/yaml
@@ -27,9 +27,9 @@ set-config init config.yaml --format yaml
 ## Architecture
 
 ```
-set-config/              # Main CLI tool
-└── @set-config/yaml    # Optional YAML adapter
-└── @set-config/toml     # Optional TOML adapter
+@set-config/cli        # Main CLI tool
+└── @set-config/yaml  # Optional YAML adapter
+└── @set-config/toml  # Optional TOML adapter
 ```
 
 ## License
