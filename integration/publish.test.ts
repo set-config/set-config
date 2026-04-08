@@ -34,7 +34,14 @@ function npx(pkg: string, args: string): string {
   return execSync(`npx -p ${pkg}@${version} ${REGISTRY} ${args}`, { cwd: tmpDir, encoding: 'utf-8', stdio: 'pipe', timeout: 60000 });
 }
 
-// NOTE: @set-config/core does NOT expose CLI - it's just the engine
+// NOTE: @set-config/core exposes CLI for JSON-only minimal usage
+
+describe('npx @set-config/core', () => {
+  skipIfNoNetwork('set/get JSON', () => {
+    npx('@set-config/core', 'set-config set test.json a 123');
+    expect(npx('@set-config/core', 'set-config get test.json a')).toContain('123');
+  });
+});
 
 describe('npx @set-config/yaml', () => {
   skipIfNoNetwork('set/get YAML', () => {

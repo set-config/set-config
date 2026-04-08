@@ -51,10 +51,10 @@ npm install -g @set-config/cli
 ### Pattern 3: Minimal/speed-critical scenarios
 
 ```bash
-# Only JSON needed - smallest download
+# JSON only - smallest download, fastest startup
 npx @set-config/core set config.json a 123
 
-# YAML only - faster startup for single format
+# YAML only
 npx @set-config/yaml set config.yaml server.port 8080
 
 # TOML only
@@ -63,7 +63,8 @@ npx @set-config/toml set config.toml database.pool 10
 
 **When to use which:**
 - `cli` (recommended) - Most scenarios, includes all formats
-- `yaml` / `toml` - Speed-critical, only download what you need
+- `core` - JSON only, minimal/fastest
+- `yaml` / `toml` - Specific format, minimal
 
 ## Value Types
 
@@ -99,7 +100,7 @@ npx @set-config/cli set newfile.json a.b.c 123  # ✓ Creates newfile.json
 npx @set-config/cli set config.json new.path.value 123  # ✓ Creates path
 
 # Invalid format - clear error
-npx @set-config/core set file.yaml ...  # ✗ Error: YAML not supported
+npx @set-config/yaml set file.yaml ...  # Only works with yaml
 ```
 
 ## For Tool Definitions

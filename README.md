@@ -15,6 +15,7 @@ npx @set-config/cli get config.json a.b.c
 | Package | Description | Use Case |
 |---------|-------------|----------|
 | `@set-config/cli` | Full CLI + all adapters | Most scenarios (recommended) |
+| `@set-config/core` | JSON only | Minimal/fastest |
 | `@set-config/yaml` | YAML adapter only | Minimal/speed-critical |
 | `@set-config/toml` | TOML adapter only | Minimal/speed-critical |
 

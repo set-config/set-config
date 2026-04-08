@@ -28,18 +28,26 @@ await build({
 });
 
 // Generate dist/package.json
-// NOTE: core package does NOT expose CLI bin - only engine
-// CLI is exposed via @set-config/cli, @set-config/yaml, @set-config/toml
+// core exposes CLI bin for minimal JSON-only usage
 const distPkg = {
   name: pkg.name,
   version: pkg.version,
   description: pkg.description,
   type: pkg.type,
   main: 'index.js',
+  bin: {
+    'set-config': './bin/set-config',
+  },
   repository: pkg.repository,
   publishConfig: pkg.publishConfig,
 };
 
 fs.writeFileSync(resolve(root, 'dist/package.json'), JSON.stringify(distPkg, null, 2) + '\n');
+
+// Write bin with correct import path
+fs.mkdirSync(resolve(root, 'dist/bin'), { recursive: true });
+fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
+import '../index.js';
+`);
 
 console.log(`✓ Built ${pkg.name}`);

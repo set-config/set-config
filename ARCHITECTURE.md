@@ -14,7 +14,7 @@ set-config is an agent-first config file CLI designed for AI agents to modify co
 
 ```
 @set-config/
-├── core    # Engine only (adapter loader, no CLI bin)
+├── core    # Engine + JSON adapter + CLI bin
 ├── yaml    # YAML adapter + CLI bin
 ├── toml    # TOML adapter + CLI bin
 └── cli     # Full wrapper + CLI bin (depends on core + yaml + toml)
@@ -52,7 +52,9 @@ set-config set config.yaml a.b.c 123
 
 ## Bin Registration
 
-All packages register `set-config` bin. When multiple packages are globally installed, npm/pnpm will warn about duplicates but use the last-installed version - this is acceptable because all versions are compatible.
+All four packages (`core`, `yaml`, `toml`, `cli`) register the `set-config` bin.
+
+When multiple packages are globally installed, npm/pnpm may warn about duplicate bins but use the last-installed version - this is acceptable because all versions are compatible.
 
 ## Dependencies
 
@@ -62,4 +64,4 @@ yaml → core
 toml → core
 ```
 
-**Note:** `core` is the engine (adapter loader). It does NOT expose a CLI bin. CLI access is provided by `cli`, `yaml`, and `toml` packages. The built-in JSON support is in `core`, while `cli` bundles all adapters.
+**Note:** `core` is the engine (adapter loader + JSON support) and exposes a CLI bin for minimal JSON-only usage. `cli` bundles all adapters for full functionality.
