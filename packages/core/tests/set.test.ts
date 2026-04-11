@@ -79,4 +79,16 @@ describe('set command', () => {
     expect(logs.some(l => l.includes('○ File not found'))).toBe(false);
     expect(logs.some(l => l.includes('✓ Set'))).toBe(true);
   });
+
+  it('should create parent directories when they do not exist', async () => {
+    const nestedDir = path.join(testDir, 'deeply', 'nested', 'dir');
+    const nestedFile = path.join(nestedDir, 'config.json');
+    expect(fs.existsSync(nestedDir)).toBe(false);
+
+    await set(nestedFile, 'foo', 'bar');
+
+    expect(fs.existsSync(nestedFile)).toBe(true);
+    const content = JSON.parse(fs.readFileSync(nestedFile, 'utf-8'));
+    expect(content.foo).toBe('bar');
+  });
 });
