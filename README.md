@@ -37,6 +37,8 @@ npx @set-config/cli delete config.json path.to.value
 npx @set-config/cli list config.json
 npx @set-config/cli append config.json array.path "item"
 npx @set-config/cli remove config.json array.path "item"
+npx @set-config/cli init config.json
+npx @set-config/cli formats
 ```
 
 ## Keys with Dots
@@ -59,6 +61,8 @@ Single or double quotes work: `"key.with.dots"` or `'key.with.dots'`
 | `false` | boolean `false` |
 | `null` | null |
 | `hello` | string `"hello"` |
+| `'{"key":"val"}'` | object `{"key": "val"}` |
+| `'[1,2,3]'` | array `[1, 2, 3]` |
 
 ## For Agents
 

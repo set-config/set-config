@@ -7,6 +7,10 @@ export function parseValue(str: string): unknown {
   if (str === 'undefined') return undefined;
   if (/^\d+$/.test(str)) return parseInt(str, 10);
   if (/^\d+\.\d+$/.test(str)) return parseFloat(str);
+  // Try JSON parse for objects/arrays (e.g. '{"key":"val"}' or '[1,2]')
+  if (str.startsWith('{') || str.startsWith('[')) {
+    try { return JSON.parse(str); } catch {}
+  }
   return str;
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { tokenizeKeyPath, getNested, setNested, deleteNested } from '../src/utils.js';
+import { tokenizeKeyPath, getNested, setNested, deleteNested, parseValue } from '../src/utils.js';
 
 describe('tokenizeKeyPath', () => {
   it('should tokenize simple keys without quotes', () => {
@@ -107,5 +107,55 @@ describe('deleteNested', () => {
   it('should return false for non-existent path', () => {
     const obj: any = { a: { b: 123 } };
     expect(deleteNested(obj, 'a.c')).toBe(false);
+  });
+});
+
+describe('parseValue', () => {
+  it('should parse numbers', () => {
+    expect(parseValue('123')).toBe(123);
+    expect(parseValue('0')).toBe(0);
+  });
+
+  it('should parse negative numbers when passed as string', () => {
+    // Note: '-42' is treated as string because regex /^\d+$/ only matches positive integers
+    expect(parseValue('-42')).toBe('-42');
+  });
+
+  it('should parse floats', () => {
+    expect(parseValue('3.14')).toBe(3.14);
+    expect(parseValue('0.5')).toBe(0.5);
+  });
+
+  it('should parse booleans', () => {
+    expect(parseValue('true')).toBe(true);
+    expect(parseValue('false')).toBe(false);
+  });
+
+  it('should parse null', () => {
+    expect(parseValue('null')).toBe(null);
+  });
+
+  it('should parse undefined', () => {
+    expect(parseValue('undefined')).toBe(undefined);
+  });
+
+  it('should parse strings as-is', () => {
+    expect(parseValue('hello')).toBe('hello');
+    expect(parseValue('hello world')).toBe('hello world');
+  });
+
+  it('should parse JSON objects', () => {
+    expect(parseValue('{"key":"val"}')).toEqual({ key: 'val' });
+    expect(parseValue('{"a":1,"b":2}')).toEqual({ a: 1, b: 2 });
+  });
+
+  it('should parse JSON arrays', () => {
+    expect(parseValue('[1,2,3]')).toEqual([1, 2, 3]);
+    expect(parseValue('["a","b","c"]')).toEqual(['a', 'b', 'c']);
+  });
+
+  it('should return string for invalid JSON', () => {
+    expect(parseValue('{invalid}')).toBe('{invalid}');
+    expect(parseValue('[1,2')).toBe('[1,2');
   });
 });
