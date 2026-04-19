@@ -22,7 +22,7 @@ node -e "
 " settings.json "$MODEL" "$URL"
 
 # What we had: env file written with grep/sed conditional logic (14 lines)
-grep -q '^MINIMAX_API_KEY=' .env && sed -i 's|^MINIMAX_API_KEY=.*|...|' .env || echo "MINIMAX_API_KEY=..." >> .env
+grep -q '^API_KEY=' .env && sed -i 's|^API_KEY=.*|...|' .env || echo "API_KEY=..." >> .env
 ```
 
 These all work, but nobody can read them. You have to mentally parse printf format strings, shell variable expansion, and JavaScript to understand what config a provision step writes.
@@ -37,8 +37,8 @@ set-config settings.json \
   --merge='env={"ANTHROPIC_BASE_URL":"'"$URL"'"}'
 
 set-config .env \
-  --set='MINIMAX_API_KEY='"$API_KEY" \
-  --set='MINIMAX_BASE_URL='"$BASE_URL"
+  --set='API_KEY='"$API_KEY" \
+  --set='BASE_URL='"$BASE_URL"
 ```
 
 Same result. But you can **see the config structure in the command itself**. No printf, no inline JS, no grep/sed.

@@ -125,7 +125,7 @@ set-config formats
 ### Path syntax (all modes)
 - `.key` — object property
 - `[n]` — array index
-- Mixed: `items[0].name`, `provider.models."MiniMax-M2.7-highspeed".limit`
+- Mixed: `items[0].name`, `provider.models."model-2.7".limit`
 - Empty path `''` — operates on root (replace for `set`, merge for `merge`)
 
 ## For More Details
