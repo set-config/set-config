@@ -50,29 +50,6 @@ Same result. But you can **see the config structure in the command itself**. No 
 npx @set-config/core config.json --set='model=gpt-4o' --set='debug=true'
 ```
 
-## Packages
-
-`@set-config/core` is the engine (JSON built-in, 17 KB). Adapter packages include the engine — install one package per format, or `cli` for everything.
-
-| Package | Format | Install size |
-|---------|--------|-------------|
-| `@set-config/core` | JSON | 17 KB |
-| `@set-config/yaml` | YAML | 158 KB |
-| `@set-config/toml` | TOML | 72 KB |
-| `@set-config/dotenv` | .env | 21 KB |
-| `@set-config/cli` | All above | 217 KB |
-
-```bash
-# Only JSON (17 KB)
-npx @set-config/core config.json --set='model=gpt-4o'
-
-# JSON + YAML (158 KB)
-npx @set-config/yaml config.yaml --merge='server={"port":8080}'
-
-# Everything (217 KB)
-npx @set-config/cli config.json config.yaml config.toml .env --set='key=value'
-```
-
 ## Batch Mode
 
 Read the file once, apply all changes, write once. One config declaration per flag — scan a command and know exactly what changed.
@@ -96,16 +73,6 @@ npx @set-config/cli ~/.openclaw/config.yaml \
 - **One read, one write** — no race conditions between parallel operations
 - **Complete visibility** — each `--set` or `--merge` is a config declaration; audit by reading
 - **Atomic** — either all changes apply or none do
-
-## Packages
-
-| Package | Description |
-|---------|-------------|
-| `@set-config/cli` | Full CLI — JSON + YAML + TOML + ENV adapters (recommended) |
-| `@set-config/core` | JSON only — smallest footprint |
-| `@set-config/yaml` | YAML adapter |
-| `@set-config/toml` | TOML adapter |
-| `@set-config/dotenv` | ENV (.env) adapter |
 
 ## Reference
 
