@@ -1,7 +1,7 @@
 {
-  "name": "@set-config/toml",
+  "name": "@set-config/dotenv",
   "version": "0.1.0",
-  "description": "TOML adapter for set-config",
+  "description": "ENV adapter for set-config - .env file support",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -18,8 +18,7 @@
     "vite": "npm:rolldown-vite@latest"
   },
   "dependencies": {
-    "@set-config/core": "workspace:*",
-    "@iarna/toml": "^2.2.5"
+    "@set-config/core": "workspace:*"
   },
   "repository": {
     "type": "git",

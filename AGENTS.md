@@ -22,9 +22,10 @@ Universal config file CLI for AI agents. Simple commands to set/get/delete JSON,
 set-config/
 ├── packages/
 │   ├── core/          # Engine + adapter loader + JSON adapter
-│   ├── yaml/         # YAML adapter
-│   ├── toml/         # TOML adapter
-│   └── cli/          # Full wrapper (bundles all adapters)
+│   ├── dotenv/        # ENV (.env) adapter
+│   ├── yaml/          # YAML adapter
+│   ├── toml/          # TOML adapter
+│   └── cli/           # Full wrapper (bundles all adapters)
 ├── integration/       # Integration tests (vitest)
 ├── ARCHITECTURE.md   # Technical architecture details
 ├── AGENTS.md         # This file
@@ -56,6 +57,7 @@ pnpm build
 
 # 3. Publish from dist/
 cd packages/core && npm run publish
+cd packages/dotenv && npm run publish
 cd packages/yaml && npm run publish
 cd packages/toml && npm run publish
 cd packages/cli && npm run publish
@@ -88,17 +90,43 @@ CI=true pnpm test:integration
 ### Why Dynamic Import for Adapters?
 Allows optional dependencies. If yaml adapter isn't installed, core still works for JSON. Error messages guide users to install the needed adapter.
 
-## CLI Commands
+## CLI
 
-See `packages/core/src/commands/` for implementation:
-- `set` - Set a value (creates path if needed)
-- `get` - Get a value
-- `delete` - Delete a key
-- `list` - List keys at path
-- `append` - Append to array
-- `remove` - Remove from array
-- `init` - Initialize new file
-- `formats` - Show supported formats
+### Batch mode (recommended for provision scripts)
+
+File first, ops after. Single read + single write.
+
+```
+set-config <file>
+  --set='path=value'           Set value (heuristic parse)
+  --set-json='path=json'       Set value (strict JSON.parse)
+  --merge='path=json'          Deep merge object at path
+  --merge-json='path=json'     Deep merge object at path (strict JSON.parse)
+  --append-json='path=json'    Append to array at path (strict, idempotent)
+  --delete='path'              Delete key at path
+```
+
+Split on first `=`: left is path, right is value. Empty path = root. Ops execute in flag order.
+
+### Subcommand mode (single-operation, for interactive use)
+
+```
+set-config set [--json] <file> [path] <value>
+set-config get <file> [path]
+set-config delete <file> <path>
+set-config list <file> [path]
+set-config append [--json] <file> <path> <value>
+set-config remove <file> <path> <value>
+set-config merge [--json] <file> [path] <value>
+set-config init <file> [--format]
+set-config formats
+```
+
+### Path syntax (all modes)
+- `.key` — object property
+- `[n]` — array index
+- Mixed: `items[0].name`, `provider.models."MiniMax-M2.7-highspeed".limit`
+- Empty path `''` — operates on root (replace for `set`, merge for `merge`)
 
 ## For More Details
 

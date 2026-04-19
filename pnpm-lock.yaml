@@ -26,6 +26,9 @@ importers:
       '@set-config/core':
         specifier: workspace:*
         version: link:../core
+      '@set-config/dotenv':
+        specifier: workspace:*
+        version: link:../dotenv
       '@set-config/toml':
         specifier: workspace:*
         version: link:../toml
@@ -41,6 +44,19 @@ importers:
         version: rolldown-vite@7.3.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(yaml@2.8.3)
 
   packages/core:
+    devDependencies:
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+      vite:
+        specifier: npm:rolldown-vite@latest
+        version: rolldown-vite@7.3.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(yaml@2.8.3)
+
+  packages/dotenv:
+    dependencies:
+      '@set-config/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       typescript:
         specifier: ^6.0.2

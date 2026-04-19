@@ -7,7 +7,7 @@ const scriptDir = resolve(dirname(fileURLToPath(import.meta.url)));
 const root = resolve(scriptDir, '..');
 const pkg = JSON.parse(fs.readFileSync(resolve(root, 'package.json'), 'utf8'));
 
-// Build with vite for Node.js
+// Build with vite
 await build({
   root,
   build: {
@@ -19,7 +19,7 @@ await build({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      external: ['@set-config/core', '@set-config/dotenv', '@set-config/yaml', '@set-config/toml'],
+      external: ['fs'],
       output: {
         entryFileNames: 'index.js',
       },
@@ -38,8 +38,6 @@ function getVersion(name: string): string {
 }
 
 // Generate dist/package.json with resolved versions
-// Adjust bin path for dist (remove leading ./dist/ since we publish from dist)
-const distBinPath = pkg.bin['set-config'].replace('./dist', '.');
 const distPkg = {
   name: pkg.name,
   version: pkg.version,
@@ -47,24 +45,21 @@ const distPkg = {
   type: pkg.type,
   main: 'index.js',
   bin: {
-    'set-config': distBinPath,
+    'set-config': './bin/set-config',
   },
   repository: pkg.repository,
   publishConfig: pkg.publishConfig,
   dependencies: {
     '@set-config/core': getVersion('@set-config/core'),
-    '@set-config/dotenv': getVersion('@set-config/dotenv'),
-    '@set-config/yaml': getVersion('@set-config/yaml'),
-    '@set-config/toml': getVersion('@set-config/toml'),
   },
 };
 
 fs.writeFileSync(resolve(root, 'dist/package.json'), JSON.stringify(distPkg, null, 2) + '\n');
 
-// Write bin with correct import path
+// Write bin/set-config
 fs.mkdirSync(resolve(root, 'dist/bin'), { recursive: true });
 fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
-import '../index.js';
+import '@set-config/core';
 `);
 
 console.log(`✓ Built ${pkg.name}`);

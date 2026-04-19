@@ -1,42 +1,71 @@
 #!/usr/bin/env node
 
+import fs from 'fs';
+import path from 'path';
 import { parseArgs } from 'util';
+import { getAdapter } from './adapters/index.js';
 import { getSupportedFormats } from './adapters/index.js';
+import {
+  parseValue, parseValueStrict,
+  setNested, mergeNested, deleteNested,
+  appendNested, getNested,
+  resolvePath, splitKV,
+} from './utils.js';
 import { set } from './commands/set.js';
 import { get } from './commands/get.js';
 import { del } from './commands/delete.js';
 import { list } from './commands/list.js';
 import { append } from './commands/append.js';
 import { remove } from './commands/remove.js';
+import { merge } from './commands/merge.js';
 import { init } from './commands/init.js';
-import fs from 'fs';
 
-const commands: Record<string, Function> = { set, get, delete: del, del, list, append, remove, init };
-
+/**
+ * Batch mode: read once, apply all ops, write once.
+ */
 async function showHelp() {
   const formats = await getSupportedFormats();
   console.log(`set-config - Agent-first config file CLI
 
 Usage:
-  set-config <command> [options]
+  set-config <command> [options] <file> [path] [value]   # Subcommand mode
+  set-config <file> --set='k=v' --merge='k={...}'        # Batch mode (single read/write)
 
-Commands:
-  set <file> <path> <value>    Set a field value
-  get <file> <path>            Get a field value
+Subcommands:
+  set <file> [path] <value>     Set a field value (creates path if needed)
+  get <file> [path]             Get a field value
   delete <file> <path>          Delete a field (alias: del)
   list <file> [path]            List content at path (default: root)
-  append <file> <path> <value> Append value to array
-  remove <file> <path> <value> Remove value from array
-  init <file> [--format]       Create new config file
-  formats                      List supported formats
+  append <file> <path> <value>  Append value to array
+  remove <file> <path> <value>  Remove value from array
+  merge <file> [path] <value>   Deep merge object (path optional, defaults to root)
+  init <file> [--format]        Create new config file
+  formats                       List supported formats
+
+Batch options (single read + multiple ops + single write):
+  --set='path=value'            Set value (heuristic parse)
+  --set-json='path=json'        Set value (strict JSON.parse)
+  --merge='path=json'           Deep merge object at path
+  --merge-json='path=json'      Deep merge object at path (strict JSON.parse)
+  --append-json='path=json'     Append to array at path (strict, idempotent)
+  --delete='path'               Delete key at path
+
+Subcommand options:
+  --json, -j                    Strict JSON mode (for set, append, merge)
 
 Supported formats:
 ${formats.map(f => `  - ${f}`).join('\n')}
 
-Examples:
-  set-config set opencode.json a.b.c 123
-  set-config set config.yaml server.port 8080
-  set-config get opencode.json a.b.c
+Examples (subcommand):
+  set-config set config.json a.b.c 123
+  set-config set --json config.json model '"model-name"'
+  set-config merge config.json '{"provider":{"limit":131072}}'
+
+Examples (batch):
+  set-config config.json --set='model=gpt-4o' --set='debug=true' --set='port=8080'
+  set-config config.json --set='model=gpt-4o' --merge='provider={"api_key":"sk-..."}'
+  set-config config.toml --set='model=llm-v1' --set='approval_policy=never' \\
+    --merge='model_providers.default={"name":"Provider","base_url":"http://localhost:8000"}'
 `);
 }
 
@@ -56,11 +85,24 @@ async function main() {
 
   const { values, positionals } = parseArgs({
     args,
-    options: { format: { type: 'string', short: 'f' } },
+    options: {
+      format: { type: 'string', short: 'f' },
+      json: { type: 'boolean', short: 'j' },
+      set: { type: 'string', multiple: true },
+      'set-json': { type: 'string', multiple: true },
+      merge: { type: 'string', multiple: true },
+      'merge-json': { type: 'string', multiple: true },
+      'append-json': { type: 'string', multiple: true },
+      delete: { type: 'string', multiple: true },
+    },
     allowPositionals: true,
+    strict: false,
   });
 
+  const jsonMode = values.json === true;
   const [commandName, ...cmdArgs] = positionals;
+
+  // ── Built-in commands (no file needed) ──
 
   if (commandName === 'formats') {
     const formats = await getSupportedFormats();
@@ -73,18 +115,169 @@ async function main() {
     return;
   }
 
-  const command = commands[commandName];
-  if (!command) {
-    console.error(`✗ Unknown command: ${commandName}`);
-    console.error("Run 'set-config' without arguments to see help");
-    process.exit(1);
+  // ── Batch mode: first positional is file, ops come from flags ──
+  // Activated when: no known subcommand OR any batch flag is present
+  const batchFlags = [values.set, values['set-json'], values.merge, values['merge-json'], values['append-json'], values.delete];
+  const hasBatchOps = batchFlags.some(arr => arr && arr.length > 0);
+
+  if (hasBatchOps || !['set', 'get', 'delete', 'del', 'list', 'append', 'remove', 'merge'].includes(commandName)) {
+    const filepath = commandName;
+    if (!filepath) {
+      console.error('Usage: set-config <file> --set=\'path=value\' ...');
+      process.exit(1);
+    }
+
+    const resolvedPath = resolvePath(filepath);
+    const dir = path.dirname(resolvedPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const adapter = await getAdapter(resolvedPath);
+    const fileExists = fs.existsSync(resolvedPath);
+    const data: Record<string, unknown> = (adapter.read(resolvedPath) as Record<string, unknown>) || {};
+    let changed = false;
+
+    // Execute ops in flag order
+    for (const kv of values.set || []) {
+      const [p, v] = splitKV(kv);
+      setNested(data, p, parseValue(v));
+      changed = true;
+      console.log(`✓ Set ${p || '(root)'} = ${v}`);
+    }
+
+    for (const kv of values['set-json'] || []) {
+      const [p, v] = splitKV(kv);
+      setNested(data, p, parseValueStrict(v));
+      changed = true;
+      console.log(`✓ Set-json ${p || '(root)'} = ${v}`);
+    }
+
+    for (const kv of values.merge || []) {
+      const [p, v] = splitKV(kv);
+      const parsed = parseValue(v);
+      if (typeof parsed !== 'object' || parsed === null) {
+        throw new Error(`--merge requires a JSON object value, got: ${v}`);
+      }
+      const result = mergeNested(data, p, parsed);
+      if (p === '' && result !== data) Object.assign(data, result);
+      changed = true;
+      console.log(`✓ Merged into ${p || '(root)'}`);
+    }
+
+    for (const kv of values['merge-json'] || []) {
+      const [p, v] = splitKV(kv);
+      const parsed = parseValueStrict(v);
+      if (typeof parsed !== 'object' || parsed === null) {
+        throw new Error(`--merge-json requires a JSON object value`);
+      }
+      const result = mergeNested(data, p, parsed);
+      if (p === '' && result !== data) Object.assign(data, result);
+      changed = true;
+      console.log(`✓ Merged-json into ${p || '(root)'}`);
+    }
+
+    for (const kv of values['append-json'] || []) {
+      const [p, v] = splitKV(kv);
+      const parsed = parseValueStrict(v);
+      if (!p) throw new Error('--append-json requires a path');
+      const target = getNested(data, p);
+      if (target === undefined) throw new Error(`Path not found: ${p}`);
+      if (!Array.isArray(target)) throw new Error(`Path is not an array: ${p}`);
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        throw new Error('--append-json requires a JSON object value');
+      }
+      const exists = (target as unknown[]).some(item => JSON.stringify(item) === JSON.stringify(parsed));
+      if (!exists) {
+        (target as unknown[]).push(parsed);
+        changed = true;
+        console.log(`✓ Appended to ${p}`);
+      } else {
+        console.log(`✓ Skipped (already exists): ${p}`);
+      }
+    }
+
+    for (const p of values.delete || []) {
+      // --delete='path' — no '=', entire value is the path
+      const delPath = p.includes('=') ? p.split('=')[0] : p;
+      const deleted = deleteNested(data, delPath);
+      if (deleted) {
+        changed = true;
+        console.log(`✓ Deleted ${delPath}`);
+      } else {
+        console.log(`✗ Path not found: ${delPath}`);
+      }
+    }
+
+    if (!changed) {
+      console.log('(no changes)');
+      return;
+    }
+
+    adapter.write(resolvedPath, data);
+    if (!fileExists) {
+      console.log(`○ File not found, created: ${resolvedPath}`);
+    }
+    return;
   }
 
-  try {
-    await command(...cmdArgs);
-  } catch (err: unknown) {
-    console.error(`✗ Error: ${(err as Error).message}`);
-    process.exit(1);
+  // ── Subcommand mode ──
+
+  switch (commandName) {
+    case 'set':
+      if (cmdArgs.length < 2) {
+        console.error('Usage: set <file> [path] <value>');
+        process.exit(1);
+      }
+      if (cmdArgs.length === 2) {
+        await set(cmdArgs[0], '', cmdArgs[1], jsonMode);
+      } else {
+        await set(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
+      }
+      break;
+
+    case 'get':
+      await get(cmdArgs[0], cmdArgs[1]);
+      break;
+
+    case 'delete':
+    case 'del':
+      await del(cmdArgs[0], cmdArgs[1]);
+      break;
+
+    case 'list':
+      await list(cmdArgs[0], cmdArgs[1]);
+      break;
+
+    case 'append':
+      if (cmdArgs.length < 3) {
+        console.error('Usage: append <file> <path> <value>');
+        process.exit(1);
+      }
+      await append(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
+      break;
+
+    case 'remove':
+      if (cmdArgs.length < 3) {
+        console.error('Usage: remove <file> <path> <value>');
+        process.exit(1);
+      }
+      await remove(cmdArgs[0], cmdArgs[1], cmdArgs[2]);
+      break;
+
+    case 'merge':
+      if (cmdArgs.length < 2) {
+        console.error('Usage: merge <file> [path] <value>');
+        process.exit(1);
+      }
+      if (cmdArgs.length === 2) {
+        await merge(cmdArgs[0], undefined, cmdArgs[1], jsonMode);
+      } else {
+        await merge(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
+      }
+      break;
+
+    default:
+      console.error(`✗ Unknown command: ${commandName}`);
+      console.error("Run 'set-config' without arguments to see help");
+      process.exit(1);
   }
 }
 

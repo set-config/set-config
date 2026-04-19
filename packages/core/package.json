@@ -1,6 +1,6 @@
 {
   "name": "@set-config/core",
-  "version": "0.0.14",
+  "version": "0.2.0",
   "description": "CLI engine for set-config - adapter loader and CLI framework",
   "type": "module",
   "main": "dist/index.js",

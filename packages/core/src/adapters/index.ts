@@ -18,6 +18,12 @@ class AdapterLoader {
     const external: ConfigAdapter[] = [];
     
     try {
+      const mod = await import('@set-config/dotenv');
+      const DotenvAdapter = (mod as any).EnvAdapter || (mod as any).DotenvAdapter || mod.default;
+      if (DotenvAdapter) external.push(new DotenvAdapter());
+    } catch {}
+
+    try {
       const mod = await import('@set-config/yaml');
       const YamlAdapter = (mod as any).YamlAdapter || mod.default;
       if (YamlAdapter) external.push(new YamlAdapter());
@@ -68,9 +74,12 @@ export function getBuiltInAdapter(filename: string): ConfigAdapter {
 
 export async function getSupportedFormats(): Promise<string[]> {
   const formats = ['JSON (.json, .jsonc) - built-in'];
-  const external = await loader.load();
+  const hasDotenv = external.some(a => a.constructor.name === 'EnvAdapter');
   const hasYaml = external.some(a => a.constructor.name === 'YamlAdapter');
   const hasToml = external.some(a => a.constructor.name === 'TomlAdapter');
+
+  if (hasDotenv) formats.push('ENV (.env) - @set-config/dotenv');
+  else formats.push('ENV (.env) - npm install @set-config/dotenv');
 
   if (hasYaml) formats.push('YAML (.yaml, .yml) - @set-config/yaml');
   else formats.push('YAML (.yaml, .yml) - npm install @set-config/yaml');

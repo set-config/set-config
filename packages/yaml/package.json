@@ -1,6 +1,6 @@
 {
   "name": "@set-config/yaml",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "YAML adapter for set-config",
   "type": "module",
   "main": "dist/index.js",
