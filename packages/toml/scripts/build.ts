@@ -7,7 +7,7 @@ const scriptDir = resolve(dirname(fileURLToPath(import.meta.url)));
 const root = resolve(scriptDir, '..');
 const pkg = JSON.parse(fs.readFileSync(resolve(root, 'package.json'), 'utf8'));
 
-// Build with vite
+// Build with vite — bundle @iarna/toml, tree-shake unused exports
 await build({
   root,
   build: {
@@ -19,7 +19,7 @@ await build({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      external: ['fs', '@iarna/toml'],
+      external: ['fs'],
       output: {
         entryFileNames: 'index.js',
       },
@@ -27,18 +27,7 @@ await build({
   },
 });
 
-// Get actual version from node_modules
-function getVersion(name: string): string {
-  try {
-    const pkgPath = resolve(root, `node_modules/${name}/package.json`);
-    return JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version;
-  } catch {
-    return '*';
-  }
-}
-
-// Generate dist/package.json with resolved versions
-// Adjust bin path for dist (bin is at dist/bin/set-config)
+// Generate dist/package.json — no @iarna/toml dependency (bundled)
 const distPkg = {
   name: pkg.name,
   version: pkg.version,
@@ -51,8 +40,7 @@ const distPkg = {
   repository: pkg.repository,
   publishConfig: pkg.publishConfig,
   dependencies: {
-    '@set-config/core': getVersion('@set-config/core'),
-    '@iarna/toml': pkg.dependencies['@iarna/toml'],
+    '@set-config/core': '*',
   },
 };
 
