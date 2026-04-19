@@ -1,6 +1,7 @@
 # set-config
 
 > Config changes should be readable, not reverse-engineered.
+> Built for agents: `npx`, idempotent, batch.
 
 ## Quick Start
 
