@@ -43,6 +43,18 @@ set-config .env \
 
 Same result. But you can **see the config structure in the command itself**. No printf, no inline JS, no grep/sed.
 
+## Packages
+
+`@set-config/core` is the engine (JSON built-in, 17 KB). Adapter packages include the engine — install one package per format, or `cli` for everything.
+
+| Package | Format | Install size |
+|---------|--------|-------------|
+| `@set-config/core` | JSON | 17 KB |
+| `@set-config/yaml` | YAML | 158 KB |
+| `@set-config/toml` | TOML | 72 KB |
+| `@set-config/dotenv` | .env | 21 KB |
+| `@set-config/cli` | All above | 217 KB |
+
 ## Quick Start
 
 ```bash
