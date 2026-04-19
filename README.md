@@ -2,9 +2,27 @@
 
 > Config changes should be readable, not reverse-engineered.
 
+## Quick Start
+
+```bash
+npx @set-config/core config.json --set='model=gpt-4o' --set='debug=true'
+```
+
+## Packages
+
+Install only what you need. Each package includes the engine — no shared dependencies.
+
+| Package | Format | Size |
+|---------|--------|------|
+| `@set-config/core` | JSON | 17 KB |
+| `@set-config/yaml` | YAML | 158 KB |
+| `@set-config/toml` | TOML | 72 KB |
+| `@set-config/dotenv` | .env | 21 KB |
+| `@set-config/cli` | All above | 217 KB |
+
 ## Why set-config?
 
-We maintain hundreds of provisioning scripts that write config files. Each config format has its own editing tool, but none of them work when called from shell scripts:
+We maintain hundreds of provisioning scripts that write config files. Each format has its own editing tool, but none of them work when called from shell scripts:
 
 ```bash
 # What we had: YAML config written as a printf template inside YAML
@@ -42,25 +60,6 @@ set-config .env \
 ```
 
 Same result. But you can **see the config structure in the command itself**. No printf, no inline JS, no grep/sed.
-
-## Packages
-
-`@set-config/core` is the engine (JSON built-in, 17 KB). Adapter packages include the engine — install one package per format, or `cli` for everything.
-
-| Package | Format | Install size |
-|---------|--------|-------------|
-| `@set-config/core` | JSON | 17 KB |
-| `@set-config/yaml` | YAML | 158 KB |
-| `@set-config/toml` | TOML | 72 KB |
-| `@set-config/dotenv` | .env | 21 KB |
-| `@set-config/cli` | All above | 217 KB |
-
-## Quick Start
-
-```bash
-# Install the format you need, or just use npx (zero install)
-npx @set-config/core config.json --set='model=gpt-4o' --set='debug=true'
-```
 
 ## Batch Mode
 
