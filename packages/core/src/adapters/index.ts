@@ -74,6 +74,7 @@ export function getBuiltInAdapter(filename: string): ConfigAdapter {
 
 export async function getSupportedFormats(): Promise<string[]> {
   const formats = ['JSON (.json, .jsonc) - built-in'];
+  const external = await loader.load();
   const hasDotenv = external.some(a => a.constructor.name === 'EnvAdapter');
   const hasYaml = external.some(a => a.constructor.name === 'YamlAdapter');
   const hasToml = external.some(a => a.constructor.name === 'TomlAdapter');

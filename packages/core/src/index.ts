@@ -25,47 +25,35 @@ import { init } from './commands/init.js';
  */
 async function showHelp() {
   const formats = await getSupportedFormats();
-  console.log(`set-config - Agent-first config file CLI
+  console.log(`set-config - Config changes should be readable, not reverse-engineered.
 
 Usage:
-  set-config <command> [options] <file> [path] [value]   # Subcommand mode
-  set-config <file> --set='k=v' --merge='k={...}'        # Batch mode (single read/write)
-
-Subcommands:
-  set <file> [path] <value>     Set a field value (creates path if needed)
-  get <file> [path]             Get a field value
-  delete <file> <path>          Delete a field (alias: del)
-  list <file> [path]            List content at path (default: root)
-  append <file> <path> <value>  Append value to array
-  remove <file> <path> <value>  Remove value from array
-  merge <file> [path] <value>   Deep merge object (path optional, defaults to root)
-  init <file> [--format]        Create new config file
-  formats                       List supported formats
+  set-config <file> --set='path=value' --merge='path={...}'   # Batch (recommended)
+  set-config get <file> [path]                                  # Read value
+  set-config init <file> [--format]                              # Create new file
 
 Batch options (single read + multiple ops + single write):
-  --set='path=value'            Set value (heuristic parse)
-  --set-json='path=json'        Set value (strict JSON.parse)
+  --set='path=value'            Set value (heuristic: numbers, bools, JSON)
+  --set-json='path=json'        Set value (strict JSON.parse, fails on invalid)
   --merge='path=json'           Deep merge object at path
   --merge-json='path=json'      Deep merge object at path (strict JSON.parse)
   --append-json='path=json'     Append to array at path (strict, idempotent)
   --delete='path'               Delete key at path
 
-Subcommand options:
-  --json, -j                    Strict JSON mode (for set, append, merge)
+Rules:
+  Split on first '=': left is path, right is value. Empty path = root.
+  Operations execute in flag order. All ops share one read + one write.
 
 Supported formats:
 ${formats.map(f => `  - ${f}`).join('\n')}
 
-Examples (subcommand):
-  set-config set config.json a.b.c 123
-  set-config set --json config.json model '"model-name"'
-  set-config merge config.json '{"provider":{"limit":131072}}'
-
-Examples (batch):
-  set-config config.json --set='model=gpt-4o' --set='debug=true' --set='port=8080'
-  set-config config.json --set='model=gpt-4o' --merge='provider={"api_key":"sk-..."}'
+Examples:
+  set-config config.json --set='model=gpt-4o' --set='debug=true'
+  set-config config.yaml --set='gateway.mode=local' --set='gateway.auth.mode=token'
   set-config config.toml --set='model=llm-v1' --set='approval_policy=never' \\
     --merge='model_providers.default={"name":"Provider","base_url":"http://localhost:8000"}'
+  set-config .env --set='API_KEY=sk-xxx' --set='BASE_URL=https://api.example.com'
+  set-config config.json --set='model=gpt-4o' --merge='provider={"api_key":"sk-..."}' --delete='legacy'
 `);
 }
 
