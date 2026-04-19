@@ -1,6 +1,6 @@
 {
   "name": "@set-config/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Full-featured set-config CLI wrapper",
   "type": "module",
   "bin": {
