@@ -46,8 +46,33 @@ Same result. But you can **see the config structure in the command itself**. No 
 ## Quick Start
 
 ```bash
-# One-shot: file first, ops after
-npx @set-config/cli config.json --set='model=gpt-4o' --set='debug=true'
+# Install the format you need, or just use npx (zero install)
+npx @set-config/core config.json --set='model=gpt-4o' --set='debug=true'
+```
+
+## Packages
+
+`@set-config/core` is the engine (17 KB, JSON built-in). Adapter packages add format support on top — each is self-contained with zero additional runtime dependencies.
+
+| Package | Format | Size* | Install |
+|---------|--------|-------|---------|
+| `@set-config/core` | JSON | 17 KB | `npm i @set-config/core` |
+| `@set-config/yaml` | YAML | +141 KB | `npm i @set-config/yaml` |
+| `@set-config/toml` | TOML | +55 KB | `npm i @set-config/toml` |
+| `@set-config/dotenv` | .env | +4 KB | `npm i @set-config/dotenv` |
+| `@set-config/cli` | All above | +217 KB | `npm i @set-config/cli` |
+
+*Incremental over `@set-config/core` (required by all adapters).
+
+```bash
+# Only JSON (17 KB)
+npx @set-config/core config.json --set='model=gpt-4o'
+
+# JSON + YAML (158 KB)
+npx @set-config/yaml config.yaml --merge='server={"port":8080}'
+
+# Everything (234 KB)
+npx @set-config/cli config.json config.yaml config.toml .env --set='key=value'
 ```
 
 ## Batch Mode
@@ -145,5 +170,9 @@ npx @set-config/cli config.json \
 ## Install (optional)
 
 ```bash
+# Pick the formats you need
+npm install -g @set-config/core @set-config/yaml
+
+# Or everything
 npm install -g @set-config/cli
 ```
