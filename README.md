@@ -52,17 +52,15 @@ npx @set-config/core config.json --set='model=gpt-4o' --set='debug=true'
 
 ## Packages
 
-`@set-config/core` is the engine (17 KB, JSON built-in). Adapter packages add format support on top — each is self-contained with zero additional runtime dependencies.
+`@set-config/core` is the engine (JSON built-in, 17 KB). Adapter packages include the engine — install one package per format, or `cli` for everything.
 
-| Package | Format | Size* | Install |
-|---------|--------|-------|---------|
-| `@set-config/core` | JSON | 17 KB | `npm i @set-config/core` |
-| `@set-config/yaml` | YAML | +141 KB | `npm i @set-config/yaml` |
-| `@set-config/toml` | TOML | +55 KB | `npm i @set-config/toml` |
-| `@set-config/dotenv` | .env | +4 KB | `npm i @set-config/dotenv` |
-| `@set-config/cli` | All above | +217 KB | `npm i @set-config/cli` |
-
-*Incremental over `@set-config/core` (required by all adapters).
+| Package | Format | Install size |
+|---------|--------|-------------|
+| `@set-config/core` | JSON | 17 KB |
+| `@set-config/yaml` | YAML | 158 KB |
+| `@set-config/toml` | TOML | 72 KB |
+| `@set-config/dotenv` | .env | 21 KB |
+| `@set-config/cli` | All above | 217 KB |
 
 ```bash
 # Only JSON (17 KB)
@@ -71,7 +69,7 @@ npx @set-config/core config.json --set='model=gpt-4o'
 # JSON + YAML (158 KB)
 npx @set-config/yaml config.yaml --merge='server={"port":8080}'
 
-# Everything (234 KB)
+# Everything (217 KB)
 npx @set-config/cli config.json config.yaml config.toml .env --set='key=value'
 ```
 
