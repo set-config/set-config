@@ -1,19 +1,47 @@
 # set-config
 
-> Agent-first config file CLI — modify JSON, YAML, TOML, and ENV files with a single tool, a single read/write, and complete visibility into every config change.
+> Config changes should be readable, not reverse-engineered.
 
 ## Why set-config?
 
-AI agents constantly modify config files. Existing tools create problems:
+We maintain hundreds of provisioning scripts that write config files. Each config format has its own editing tool, but none of them work when called from shell scripts:
 
-| Tool | Problem |
-|------|---------|
-| `jq` | Great for reading, painful for writing — pipelines break under pressure |
-| `node -e` | Inline scripts are invisible to future readers, hard to audit |
-| `Python` | Not always available in the execution environment |
-| `sed` / `grep` | Fragile string manipulation — breaks on special characters, edge cases |
+```bash
+# What we had: YAML config written as a printf template inside YAML
+printf 'claude-api-key:\n  - api-key: %s\n    base-url: %s\n    models:\n      - name: %s\n        alias: %s\n    cloak:\n      mode: auto\n' \
+  "$API_KEY" "$BASE_URL" "$MODEL" "$ALIAS" >> config.yaml
 
-`set-config` is built for agents: zero-install (`npx`), idempotent by design, and **batch mode** that makes every config change a single, auditable command.
+# What we had: JSON config written as inline JS inside YAML
+node -e "
+  const fs = require('fs');
+  const s = JSON.parse(fs.readFileSync(f, 'utf8'));
+  s.model = model;
+  s.env = s.env || {};
+  s.env.ANTHROPIC_BASE_URL = baseUrl;
+  fs.writeFileSync(f, JSON.stringify(s, null, 2));
+" settings.json "$MODEL" "$URL"
+
+# What we had: env file written with grep/sed conditional logic (14 lines)
+grep -q '^MINIMAX_API_KEY=' .env && sed -i 's|^MINIMAX_API_KEY=.*|...|' .env || echo "MINIMAX_API_KEY=..." >> .env
+```
+
+These all work, but nobody can read them. You have to mentally parse printf format strings, shell variable expansion, and JavaScript to understand what config a provision step writes.
+
+```bash
+# What we have now
+set-config config.yaml \
+  --merge='claude-api-key=[{"api-key":"'"$API_KEY"'","base-url":"'"$BASE_URL"'","models":[{"name":"'"$MODEL"'","alias":"'"$ALIAS"'"}],"cloak":{"mode":"auto"}}]'
+
+set-config settings.json \
+  --set='model="'"$MODEL"'"' \
+  --merge='env={"ANTHROPIC_BASE_URL":"'"$URL"'"}'
+
+set-config .env \
+  --set='MINIMAX_API_KEY='"$API_KEY" \
+  --set='MINIMAX_BASE_URL='"$BASE_URL"
+```
+
+Same result. But you can **see the config structure in the command itself**. No printf, no inline JS, no grep/sed.
 
 ## Quick Start
 
