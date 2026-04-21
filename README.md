@@ -96,6 +96,8 @@ set-config <file>
   --merge-json='path=json'     Deep merge object at path (strict JSON.parse)
   --append-json='path=json'    Append to array at path (strict, idempotent)
   --delete='path'              Delete key at path
+  --lock                       Acquire file lock before write (default: off)
+  --lock-timeout=<ms>          Max wait time for lock (default: 30000)
 ```
 
 ### Rules
@@ -143,6 +145,18 @@ npx @set-config/cli config.json \
 - `--merge` — deep merges, preserves other keys
 - `--append-json` — skips if identical object already exists
 - No accidental data loss — all operations are additive unless you explicitly overwrite
+
+## Concurrency
+
+Multiple agents writing the same config file simultaneously can lose data (last-write-wins). Add `--lock` to queue concurrent writes:
+
+```bash
+# Two agents provisioning the same file at the same time — no data loss
+set-config config.yaml --lock --set='gateway.mode=local'
+set-config config.yaml --lock --set='gateway.auth.mode=token'
+```
+
+When `--lock` is active, processes targeting the same file wait in queue. The lock is released automatically when the write completes or the process exits. Stale locks (owner process died) are automatically detected and cleaned up.
 
 ## Install (optional)
 

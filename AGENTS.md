@@ -104,9 +104,15 @@ set-config <file>
   --merge-json='path=json'     Deep merge object at path (strict JSON.parse)
   --append-json='path=json'    Append to array at path (strict, idempotent)
   --delete='path'              Delete key at path
+  --lock                       Acquire file lock before write (default: off)
+  --lock-timeout=<ms>          Max wait time for lock (default: 30000)
 ```
 
 Split on first `=`: left is path, right is value. Empty path = root. Ops execute in flag order.
+
+### Concurrency (`--lock`)
+
+When multiple agents write the same file concurrently, last-write-wins can lose data. `--lock` queues concurrent writers: only one process operates at a time, others wait. Stale locks (dead owner) are auto-detected. Works across processes.
 
 ### Subcommand mode (single-operation, for interactive use)
 

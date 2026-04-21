@@ -19,6 +19,7 @@ import { append } from './commands/append.js';
 import { remove } from './commands/remove.js';
 import { merge } from './commands/merge.js';
 import { init } from './commands/init.js';
+import { lockFile } from './file-lock.js';
 
 /**
  * Batch mode: read once, apply all ops, write once.
@@ -39,6 +40,12 @@ Batch options (single read + multiple ops + single write):
   --merge-json='path=json'      Deep merge object at path (strict JSON.parse)
   --append-json='path=json'     Append to array at path (strict, idempotent)
   --delete='path'               Delete key at path
+
+Concurrency:
+  --lock                        Acquire file lock before write. Concurrent
+                                processes targeting the same file queue up
+                                and execute one at a time. Default: off.
+  --lock-timeout=<ms>           Max wait time for lock (default: 30000).
 
 Rules:
   Split on first '=': left is path, right is value. Empty path = root.
@@ -76,6 +83,8 @@ async function main() {
     options: {
       format: { type: 'string', short: 'f' },
       json: { type: 'boolean', short: 'j' },
+      lock: { type: 'boolean' },
+      'lock-timeout': { type: 'string' },
       set: { type: 'string', multiple: true },
       'set-json': { type: 'string', multiple: true },
       merge: { type: 'string', multiple: true },
@@ -99,7 +108,11 @@ async function main() {
   }
 
   if (commandName === 'init') {
-    await init(cmdArgs[0], values.format as string | undefined);
+    const useLock = values.lock === true;
+    const lockTimeout = values['lock-timeout'] ? parseInt(values['lock-timeout'] as string, 10) : undefined;
+    const unlock = useLock && cmdArgs[0] ? lockFile(resolvePath(cmdArgs[0]), lockTimeout) : null;
+    try { await init(cmdArgs[0], values.format as string | undefined); }
+    finally { unlock?.(); }
     return;
   }
 
@@ -119,148 +132,173 @@ async function main() {
     const dir = path.dirname(resolvedPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     const adapter = await getAdapter(resolvedPath);
-    const fileExists = fs.existsSync(resolvedPath);
-    const data: Record<string, unknown> = (adapter.read(resolvedPath) as Record<string, unknown>) || {};
-    let changed = false;
 
-    // Execute ops in flag order
-    for (const kv of values.set || []) {
-      const [p, v] = splitKV(kv);
-      setNested(data, p, parseValue(v));
-      changed = true;
-      console.log(`✓ Set ${p || '(root)'} = ${v}`);
-    }
+    // ── File lock (optional: --lock) ──
+    const useLock = values.lock === true;
+    const lockTimeout = values['lock-timeout'] ? parseInt(values['lock-timeout'] as string, 10) : undefined;
+    const unlock = useLock ? lockFile(resolvedPath, lockTimeout) : null;
 
-    for (const kv of values['set-json'] || []) {
-      const [p, v] = splitKV(kv);
-      setNested(data, p, parseValueStrict(v));
-      changed = true;
-      console.log(`✓ Set-json ${p || '(root)'} = ${v}`);
-    }
+    try {
+      const fileExists = fs.existsSync(resolvedPath);
+      const data: Record<string, unknown> = (adapter.read(resolvedPath) as Record<string, unknown>) || {};
+      let changed = false;
 
-    for (const kv of values.merge || []) {
-      const [p, v] = splitKV(kv);
-      const parsed = parseValue(v);
-      if (typeof parsed !== 'object' || parsed === null) {
-        throw new Error(`--merge requires a JSON object value, got: ${v}`);
-      }
-      const result = mergeNested(data, p, parsed);
-      if (p === '' && result !== data) Object.assign(data, result);
-      changed = true;
-      console.log(`✓ Merged into ${p || '(root)'}`);
-    }
-
-    for (const kv of values['merge-json'] || []) {
-      const [p, v] = splitKV(kv);
-      const parsed = parseValueStrict(v);
-      if (typeof parsed !== 'object' || parsed === null) {
-        throw new Error(`--merge-json requires a JSON object value`);
-      }
-      const result = mergeNested(data, p, parsed);
-      if (p === '' && result !== data) Object.assign(data, result);
-      changed = true;
-      console.log(`✓ Merged-json into ${p || '(root)'}`);
-    }
-
-    for (const kv of values['append-json'] || []) {
-      const [p, v] = splitKV(kv);
-      const parsed = parseValueStrict(v);
-      if (!p) throw new Error('--append-json requires a path');
-      const target = getNested(data, p);
-      if (target === undefined) throw new Error(`Path not found: ${p}`);
-      if (!Array.isArray(target)) throw new Error(`Path is not an array: ${p}`);
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        throw new Error('--append-json requires a JSON object value');
-      }
-      const exists = (target as unknown[]).some(item => JSON.stringify(item) === JSON.stringify(parsed));
-      if (!exists) {
-        (target as unknown[]).push(parsed);
+      // Execute ops in flag order
+      for (const kv of values.set || []) {
+        const [p, v] = splitKV(kv);
+        setNested(data, p, parseValue(v));
         changed = true;
-        console.log(`✓ Appended to ${p}`);
-      } else {
-        console.log(`✓ Skipped (already exists): ${p}`);
+        console.log(`✓ Set ${p || '(root)'} = ${v}`);
       }
-    }
 
-    for (const p of values.delete || []) {
-      // --delete='path' — no '=', entire value is the path
-      const delPath = p.includes('=') ? p.split('=')[0] : p;
-      const deleted = deleteNested(data, delPath);
-      if (deleted) {
+      for (const kv of values['set-json'] || []) {
+        const [p, v] = splitKV(kv);
+        setNested(data, p, parseValueStrict(v));
         changed = true;
-        console.log(`✓ Deleted ${delPath}`);
-      } else {
-        console.log(`✗ Path not found: ${delPath}`);
+        console.log(`✓ Set-json ${p || '(root)'} = ${v}`);
       }
-    }
 
-    if (!changed) {
-      console.log('(no changes)');
-      return;
-    }
+      for (const kv of values.merge || []) {
+        const [p, v] = splitKV(kv);
+        const parsed = parseValue(v);
+        if (typeof parsed !== 'object' || parsed === null) {
+          throw new Error(`--merge requires a JSON object value, got: ${v}`);
+        }
+        const result = mergeNested(data, p, parsed);
+        if (p === '' && result !== data) Object.assign(data, result);
+        changed = true;
+        console.log(`✓ Merged into ${p || '(root)'}`);
+      }
 
-    adapter.write(resolvedPath, data);
-    if (!fileExists) {
-      console.log(`○ File not found, created: ${resolvedPath}`);
+      for (const kv of values['merge-json'] || []) {
+        const [p, v] = splitKV(kv);
+        const parsed = parseValueStrict(v);
+        if (typeof parsed !== 'object' || parsed === null) {
+          throw new Error(`--merge-json requires a JSON object value`);
+        }
+        const result = mergeNested(data, p, parsed);
+        if (p === '' && result !== data) Object.assign(data, result);
+        changed = true;
+        console.log(`✓ Merged-json into ${p || '(root)'}`);
+      }
+
+      for (const kv of values['append-json'] || []) {
+        const [p, v] = splitKV(kv);
+        const parsed = parseValueStrict(v);
+        if (!p) throw new Error('--append-json requires a path');
+        const target = getNested(data, p);
+        if (target === undefined) throw new Error(`Path not found: ${p}`);
+        if (!Array.isArray(target)) throw new Error(`Path is not an array: ${p}`);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          throw new Error('--append-json requires a JSON object value');
+        }
+        const exists = (target as unknown[]).some(item => JSON.stringify(item) === JSON.stringify(parsed));
+        if (!exists) {
+          (target as unknown[]).push(parsed);
+          changed = true;
+          console.log(`✓ Appended to ${p}`);
+        } else {
+          console.log(`✓ Skipped (already exists): ${p}`);
+        }
+      }
+
+      for (const p of values.delete || []) {
+        // --delete='path' — no '=', entire value is the path
+        const delPath = p.includes('=') ? p.split('=')[0] : p;
+        const deleted = deleteNested(data, delPath);
+        if (deleted) {
+          changed = true;
+          console.log(`✓ Deleted ${delPath}`);
+        } else {
+          console.log(`✗ Path not found: ${delPath}`);
+        }
+      }
+
+      if (!changed) {
+        console.log('(no changes)');
+        return;
+      }
+
+      adapter.write(resolvedPath, data);
+      if (!fileExists) {
+        console.log(`○ File not found, created: ${resolvedPath}`);
+      }
+    } finally {
+      unlock?.();
     }
     return;
   }
 
   // ── Subcommand mode ──
+  // --lock wraps the entire mutating command in a file lock.
+
+  const useLock = values.lock === true;
+  const lockTimeout = values['lock-timeout'] ? parseInt(values['lock-timeout'] as string, 10) : undefined;
 
   switch (commandName) {
-    case 'set':
+    case 'set': {
       if (cmdArgs.length < 2) {
         console.error('Usage: set <file> [path] <value>');
         process.exit(1);
       }
-      if (cmdArgs.length === 2) {
-        await set(cmdArgs[0], '', cmdArgs[1], jsonMode);
-      } else {
-        await set(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
-      }
+      const unlock = useLock ? lockFile(resolvePath(cmdArgs[0]), lockTimeout) : null;
+      try {
+        if (cmdArgs.length === 2) await set(cmdArgs[0], '', cmdArgs[1], jsonMode);
+        else await set(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
+      } finally { unlock?.(); }
       break;
+    }
 
     case 'get':
       await get(cmdArgs[0], cmdArgs[1]);
       break;
 
     case 'delete':
-    case 'del':
-      await del(cmdArgs[0], cmdArgs[1]);
+    case 'del': {
+      const unlock = useLock ? lockFile(resolvePath(cmdArgs[0]), lockTimeout) : null;
+      try { await del(cmdArgs[0], cmdArgs[1]); }
+      finally { unlock?.(); }
       break;
+    }
 
     case 'list':
       await list(cmdArgs[0], cmdArgs[1]);
       break;
 
-    case 'append':
+    case 'append': {
       if (cmdArgs.length < 3) {
         console.error('Usage: append <file> <path> <value>');
         process.exit(1);
       }
-      await append(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
+      const unlock = useLock ? lockFile(resolvePath(cmdArgs[0]), lockTimeout) : null;
+      try { await append(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode); }
+      finally { unlock?.(); }
       break;
+    }
 
-    case 'remove':
+    case 'remove': {
       if (cmdArgs.length < 3) {
         console.error('Usage: remove <file> <path> <value>');
         process.exit(1);
       }
-      await remove(cmdArgs[0], cmdArgs[1], cmdArgs[2]);
+      const unlock = useLock ? lockFile(resolvePath(cmdArgs[0]), lockTimeout) : null;
+      try { await remove(cmdArgs[0], cmdArgs[1], cmdArgs[2]); }
+      finally { unlock?.(); }
       break;
+    }
 
-    case 'merge':
+    case 'merge': {
       if (cmdArgs.length < 2) {
         console.error('Usage: merge <file> [path] <value>');
         process.exit(1);
       }
-      if (cmdArgs.length === 2) {
-        await merge(cmdArgs[0], undefined, cmdArgs[1], jsonMode);
-      } else {
-        await merge(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
-      }
+      const unlock = useLock ? lockFile(resolvePath(cmdArgs[0]), lockTimeout) : null;
+      try {
+        if (cmdArgs.length === 2) await merge(cmdArgs[0], undefined, cmdArgs[1], jsonMode);
+        else await merge(cmdArgs[0], cmdArgs[1], cmdArgs[2], jsonMode);
+      } finally { unlock?.(); }
       break;
+    }
 
     default:
       console.error(`✗ Unknown command: ${commandName}`);
