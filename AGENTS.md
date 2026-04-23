@@ -49,6 +49,12 @@ All packages share the same version number to avoid confusion.
 
 ## Publishing Workflow
 
+> **Agent rules — do NOT skip any step or take shortcuts:**
+> - Do NOT `cd dist && npm publish` directly. Always use `npm run publish` (it `cd dist` for you).
+> - Do NOT skip integration tests. Publish is not done until `CI=true pnpm test:integration` passes.
+> - Do NOT add extra flags or options to publish commands — the `publishConfig` in each package.json handles registry and access.
+> - If any step fails, STOP and report. Do not continue to the next step.
+
 ```bash
 # 1. Update versions in all packages
 # packages/*/package.json: version: x.y.z
@@ -56,7 +62,10 @@ All packages share the same version number to avoid confusion.
 # 2. Build all packages
 pnpm build
 
-# 3. Publish from dist/
+# 3. Run unit tests
+pnpm test
+
+# 4. Publish — strictly in this order (core first, cli last)
 cd packages/core && npm run publish
 cd packages/dotenv && npm run publish
 cd packages/yaml && npm run publish
@@ -64,7 +73,7 @@ cd packages/toml && npm run publish
 cd packages/markdown && npm run publish
 cd packages/cli && npm run publish
 
-# 4. Run integration tests
+# 5. Verify — integration tests MUST pass after publish
 CI=true pnpm test:integration
 ```
 
