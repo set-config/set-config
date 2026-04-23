@@ -9,7 +9,7 @@ import {
   setNested, mergeNested, deleteNested,
   appendNested, getNested,
   resolvePath, splitKV,
-} from './lib.js';
+} from '@set-config/core';
 import { set } from './commands/set.js';
 import { get } from './commands/get.js';
 import { del } from './commands/delete.js';

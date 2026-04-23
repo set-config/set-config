@@ -28,6 +28,14 @@ await build({
 });
 
 // Generate dist/package.json — no yaml dependency (bundled)
+function getVersion(name: string): string {
+  try {
+    return JSON.parse(fs.readFileSync(resolve(root, `node_modules/${name}/package.json`), 'utf8')).version;
+  } catch {
+    return '*';
+  }
+}
+
 const distPkg = {
   name: pkg.name,
   version: pkg.version,
@@ -40,7 +48,7 @@ const distPkg = {
   repository: pkg.repository,
   publishConfig: pkg.publishConfig,
   dependencies: {
-    '@set-config/core': '*',
+    '@set-config/core': getVersion('@set-config/core'),
   },
 };
 
@@ -51,5 +59,6 @@ fs.mkdirSync(resolve(root, 'dist/bin'), { recursive: true });
 fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
 import '@set-config/core/cli';
 `);
+fs.chmodSync(resolve(root, 'dist/bin/set-config'), 0o755);
 
 console.log(`✓ Built ${pkg.name}`);

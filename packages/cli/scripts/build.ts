@@ -66,5 +66,6 @@ fs.mkdirSync(resolve(root, 'dist/bin'), { recursive: true });
 fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
 import '../index.js';
 `);
+fs.chmodSync(resolve(root, 'dist/bin/set-config'), 0o755);
 
 console.log(`✓ Built ${pkg.name}`);

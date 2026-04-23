@@ -7,12 +7,12 @@ const scriptDir = resolve(dirname(fileURLToPath(import.meta.url)));
 const root = resolve(scriptDir, '..');
 const pkg = JSON.parse(fs.readFileSync(resolve(root, 'package.json'), 'utf8'));
 
-// Build library entry (index.ts → dist/index.js)
+// Build library entry (lib.ts → dist/index.js)
 await build({
   root,
   build: {
     lib: {
-      entry: resolve(root, 'src/index.ts'),
+      entry: resolve(root, 'src/lib.ts'),
       formats: ['es'],
       fileName: 'index',
     },
@@ -39,7 +39,7 @@ await build({
     outDir: 'dist',
     emptyOutDir: false,
     rollupOptions: {
-      external: ['fs', 'path', 'util'],
+      external: ['fs', 'path', 'util', '@set-config/core'],
       output: {
         entryFileNames: 'cli.js',
       },
@@ -73,5 +73,6 @@ fs.mkdirSync(resolve(root, 'dist/bin'), { recursive: true });
 fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
 import '../cli.js';
 `);
+fs.chmodSync(resolve(root, 'dist/bin/set-config'), 0o755);
 
 console.log(`✓ Built ${pkg.name}`);
