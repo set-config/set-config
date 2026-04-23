@@ -3,6 +3,13 @@
 > Config changes should be readable, not reverse-engineered.
 > Built for agents: `npx`, idempotent, batch.
 
+[![npm version](https://img.shields.io/npm/v/@set-config/core?style=flat-square)](https://www.npmjs.com/package/@set-config/core)
+[![npm version](https://img.shields.io/npm/v/@set-config/yaml?style=flat-square&label=yaml)](https://www.npmjs.com/package/@set-config/yaml)
+[![npm version](https://img.shields.io/npm/v/@set-config/toml?style=flat-square&label=toml)](https://www.npmjs.com/package/@set-config/toml)
+[![npm version](https://img.shields.io/npm/v/@set-config/dotenv?style=flat-square&label=dotenv)](https://www.npmjs.com/package/@set-config/dotenv)
+[![npm version](https://img.shields.io/npm/v/@set-config/markdown?style=flat-square&label=markdown)](https://www.npmjs.com/package/@set-config/markdown)
+[![npm version](https://img.shields.io/npm/v/@set-config/cli?style=flat-square&label=cli)](https://www.npmjs.com/package/@set-config/cli)
+
 ## Quick Start
 
 ```bash
@@ -19,6 +26,7 @@ Install only what you need. Each package includes the engine — no shared depen
 | `@set-config/yaml` | YAML | 158 KB |
 | `@set-config/toml` | TOML | 72 KB |
 | `@set-config/dotenv` | .env | 21 KB |
+| `@set-config/markdown` | Markdown | 217 KB |
 | `@set-config/cli` | All above | 217 KB |
 
 ## Why set-config?
