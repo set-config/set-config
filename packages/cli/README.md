@@ -1,6 +1,6 @@
 # @set-config/cli
 
-Universal config file CLI with JSON, YAML, and TOML support.
+Universal config file CLI with JSON, YAML, TOML, ENV, and Markdown support.
 
 ## Usage
 

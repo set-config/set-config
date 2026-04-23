@@ -19,7 +19,7 @@ await build({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      external: ['@set-config/core', '@set-config/core/cli', '@set-config/dotenv', '@set-config/yaml', '@set-config/toml'],
+      external: ['@set-config/core', '@set-config/core/cli', '@set-config/dotenv', '@set-config/yaml', '@set-config/toml', '@set-config/markdown'],
       output: {
         entryFileNames: 'index.js',
       },
@@ -56,6 +56,7 @@ const distPkg = {
     '@set-config/dotenv': getVersion('@set-config/dotenv'),
     '@set-config/yaml': getVersion('@set-config/yaml'),
     '@set-config/toml': getVersion('@set-config/toml'),
+    '@set-config/markdown': getVersion('@set-config/markdown'),
   },
 };
 
@@ -67,5 +68,9 @@ fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
 import '../index.js';
 `);
 fs.chmodSync(resolve(root, 'dist/bin/set-config'), 0o755);
+
+// Copy README.md
+const readme = resolve(root, 'README.md');
+if (fs.existsSync(readme)) fs.copyFileSync(readme, resolve(root, 'dist/README.md'));
 
 console.log(`✓ Built ${pkg.name}`);

@@ -63,4 +63,8 @@ import '@set-config/core/cli';
 `);
 fs.chmodSync(resolve(root, 'dist/bin/set-config'), 0o755);
 
+// Copy README.md
+const readme = resolve(root, 'README.md');
+if (fs.existsSync(readme)) fs.copyFileSync(readme, resolve(root, 'dist/README.md'));
+
 console.log(`✓ Built ${pkg.name}`);

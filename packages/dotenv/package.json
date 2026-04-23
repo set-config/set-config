@@ -1,6 +1,6 @@
 {
   "name": "@set-config/dotenv",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "ENV adapter for set-config - .env file support",
   "type": "module",
   "main": "dist/index.js",
