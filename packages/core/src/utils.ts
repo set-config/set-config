@@ -110,7 +110,7 @@ export function tokenizeKeyPath(keyPath: string): string[] {
 
 export function getNested(obj: unknown, keyPath: string): unknown {
   if (!keyPath) return obj;
-  return tokenizeKeyPath(keyPath).reduce((o: unknown, k: string) => (o as Record<string, unknown>)?.[k], obj);
+  return tokenizeKeyPath(keyPath).reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], obj);
 }
 
 export function setNested(obj: unknown, keyPath: string, value: unknown): unknown {
@@ -120,9 +120,9 @@ export function setNested(obj: unknown, keyPath: string, value: unknown): unknow
   }
   const keys = tokenizeKeyPath(keyPath);
   const last = keys.pop()!;
-  const target = keys.reduce((o: Record<string, unknown>, k: string) => {
+  const target = keys.reduce<Record<string, unknown>>((o, k) => {
     if (!(k in o)) o[k] = {};
-    return o[k];
+    return o[k] as Record<string, unknown>;
   }, obj as Record<string, unknown>);
   target[last] = value;
   return obj;
@@ -163,7 +163,7 @@ export function mergeNested(obj: unknown, keyPath: string, value: unknown): unkn
   const last = keys.pop()!;
   const parent = keys.reduce((o: Record<string, unknown>, k: string) => {
     if (!(k in o)) o[k] = {};
-    return o[k];
+    return o[k] as Record<string, unknown>;
   }, obj as Record<string, unknown>);
   if (isPlainObject(parent[last]) && isPlainObject(value)) {
     parent[last] = deepMerge(parent[last], value);
@@ -177,7 +177,7 @@ export function deleteNested(obj: unknown, keyPath: string): boolean {
   if (!keyPath) return false;
   const keys = tokenizeKeyPath(keyPath);
   const last = keys.pop()!;
-  const target = keys.reduce((o: Record<string, unknown> | undefined, k: string) => (o as Record<string, unknown>)?.[k], obj as Record<string, unknown>);
+  const target = keys.reduce<Record<string, unknown> | undefined>((o, k) => o?.[k] as Record<string, unknown> | undefined, obj as Record<string, unknown>);
   if (target && last in target) {
     delete target[last];
     return true;
@@ -188,9 +188,9 @@ export function deleteNested(obj: unknown, keyPath: string): boolean {
 export function appendNested(obj: unknown, keyPath: string, value: unknown): void {
   const keys = tokenizeKeyPath(keyPath);
   const last = keys.pop()!;
-  const target = keys.reduce((o: Record<string, unknown>, k: string) => {
+  const target = keys.reduce<Record<string, unknown>>((o, k) => {
     if (!(k in o)) o[k] = {};
-    return o[k];
+    return o[k] as Record<string, unknown>;
   }, obj as Record<string, unknown>);
   if (!Array.isArray(target[last])) target[last] = [];
   (target[last] as unknown[]).push(value);
@@ -199,7 +199,7 @@ export function appendNested(obj: unknown, keyPath: string, value: unknown): voi
 export function removeNested(obj: unknown, keyPath: string, value: unknown): boolean {
   const keys = tokenizeKeyPath(keyPath);
   const last = keys.pop()!;
-  const target = keys.reduce((o: Record<string, unknown> | undefined, k: string) => (o as Record<string, unknown>)?.[k], obj as Record<string, unknown>);
+  const target = keys.reduce<Record<string, unknown> | undefined>((o, k) => o?.[k] as Record<string, unknown> | undefined, obj as Record<string, unknown>);
   if (Array.isArray(target?.[last])) {
     const arr = target[last] as unknown[];
     const idx = arr.indexOf(value);

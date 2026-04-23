@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm -r --filter=@set-config/core build && pnpm -r --filter=@set-config/dotenv build && pnpm -r --filter=@set-config/yaml build && pnpm -r --filter=@set-config/toml build && pnpm -r --filter=@set-config/cli build",
+    "build": "pnpm -r --filter=@set-config/core build && pnpm -r --filter=@set-config/dotenv build && pnpm -r --filter=@set-config/yaml build && pnpm -r --filter=@set-config/toml build && pnpm -r --filter=@set-config/markdown build && pnpm -r --filter=@set-config/cli build",
     "test": "vitest run",
     "test:integration": "CI=true vitest run integration/"
   },

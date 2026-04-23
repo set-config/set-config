@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-Universal config file CLI for AI agents. Simple commands to set/get/delete JSON, YAML, TOML values.
+Universal config file CLI for AI agents. Simple commands to set/get/delete JSON, YAML, TOML, Markdown values.
 
 **Key insight**: Agents need zero-install usage (`npx`) and simple commands. Complex tooling is a barrier.
 
@@ -25,6 +25,7 @@ set-config/
 │   ├── dotenv/        # ENV (.env) adapter
 │   ├── yaml/          # YAML adapter
 │   ├── toml/          # TOML adapter
+│   ├── markdown/      # Markdown adapter
 │   └── cli/           # Full wrapper (bundles all adapters)
 ├── integration/       # Integration tests (vitest)
 ├── ARCHITECTURE.md   # Technical architecture details
@@ -60,6 +61,7 @@ cd packages/core && npm run publish
 cd packages/dotenv && npm run publish
 cd packages/yaml && npm run publish
 cd packages/toml && npm run publish
+cd packages/markdown && npm run publish
 cd packages/cli && npm run publish
 
 # 4. Run integration tests

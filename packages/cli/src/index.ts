@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import '@set-config/core';
+import '@set-config/core/cli';

@@ -11,7 +11,7 @@ export async function set(filepath: string, keyPath: string, value: string, json
   }
   const adapter = await getAdapter(resolvedPath);
   const fileExists = fs.existsSync(resolvedPath);
-  let data = adapter.read(resolvedPath) || {};
+  let data: Record<string, unknown> | null = (adapter.read(resolvedPath) as Record<string, unknown>) || {};
 
   // Empty path with no file: start from null, let setNested replace entirely
   if (!fileExists && !keyPath) {
@@ -19,7 +19,7 @@ export async function set(filepath: string, keyPath: string, value: string, json
   }
 
   const parsed = jsonMode ? parseValueStrict(value) : parseValue(value);
-  data = setNested(data, keyPath, parsed);
+  data = setNested(data || {}, keyPath, parsed) as Record<string, unknown>;
   adapter.write(resolvedPath, data);
   if (!fileExists) {
     console.log(`○ File not found, created: ${resolvedPath}`);

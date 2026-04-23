@@ -18,21 +18,31 @@ class AdapterLoader {
     const external: ConfigAdapter[] = [];
     
     try {
+      // @ts-ignore — optional runtime dependency
       const mod = await import('@set-config/dotenv');
       const DotenvAdapter = (mod as any).EnvAdapter || (mod as any).DotenvAdapter || mod.default;
       if (DotenvAdapter) external.push(new DotenvAdapter());
     } catch {}
 
     try {
+      // @ts-ignore — optional runtime dependency
       const mod = await import('@set-config/yaml');
       const YamlAdapter = (mod as any).YamlAdapter || mod.default;
       if (YamlAdapter) external.push(new YamlAdapter());
     } catch {}
 
     try {
+      // @ts-ignore — optional runtime dependency
       const mod = await import('@set-config/toml');
       const TomlAdapter = (mod as any).TomlAdapter || mod.default;
       if (TomlAdapter) external.push(new TomlAdapter());
+    } catch {}
+
+    try {
+      // @ts-ignore — optional runtime dependency
+      const mod = await import('@set-config/markdown');
+      const MarkdownAdapter = (mod as any).MarkdownAdapter || mod.default;
+      if (MarkdownAdapter) external.push(new MarkdownAdapter());
     } catch {}
 
     this._externalAdapters = external;
@@ -87,6 +97,10 @@ export async function getSupportedFormats(): Promise<string[]> {
 
   if (hasToml) formats.push('TOML (.toml) - @set-config/toml');
   else formats.push('TOML (.toml) - npm install @set-config/toml');
+
+  const hasMarkdown = external.some(a => a.constructor.name === 'MarkdownAdapter');
+  if (hasMarkdown) formats.push('Markdown (.md) - @set-config/markdown');
+  else formats.push('Markdown (.md) - npm install @set-config/markdown');
 
   return formats;
 }

@@ -4,16 +4,26 @@
   "description": "CLI engine for set-config - adapter loader and CLI framework",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./cli": "./dist/cli.js"
+  },
   "bin": {
     "set-config": "./dist/bin/set-config"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "node scripts/build.ts",
     "prepublishOnly": "exit 1",
     "publish": "cd dist && npm publish"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "typescript": "^6.0.2",
     "vite": "npm:rolldown-vite@latest"
   },

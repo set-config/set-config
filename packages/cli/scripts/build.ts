@@ -19,7 +19,7 @@ await build({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      external: ['@set-config/core', '@set-config/dotenv', '@set-config/yaml', '@set-config/toml'],
+      external: ['@set-config/core', '@set-config/core/cli', '@set-config/dotenv', '@set-config/yaml', '@set-config/toml'],
       output: {
         entryFileNames: 'index.js',
       },

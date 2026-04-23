@@ -49,7 +49,7 @@ fs.writeFileSync(resolve(root, 'dist/package.json'), JSON.stringify(distPkg, nul
 // Write bin/set-config
 fs.mkdirSync(resolve(root, 'dist/bin'), { recursive: true });
 fs.writeFileSync(resolve(root, 'dist/bin/set-config'), `#!/usr/bin/env node
-import '@set-config/core';
+import '@set-config/core/cli';
 `);
 
 console.log(`✓ Built ${pkg.name}`);
